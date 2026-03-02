@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phù Thủy Code C++ - Trận Chiến Lý Thuyết</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="phuthuy_data.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -14,7 +15,23 @@
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
+            overflow-y: auto;
             user-select: none;
+        }
+
+        /* Tùy chỉnh thanh cuộn (Scrollbar) cho thật đẹp */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #11061f; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6b46c1; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9f7aea; 
         }
 
         /* Hiệu ứng trôi nổi cơ bản */
@@ -95,11 +112,11 @@
         }
     </style>
 </head>
-<body class="flex flex-col h-screen relative">
+    <body class="flex flex-col min-h-screen relative">
     <div class="forest-bg"></div>
 
     <!-- Header / Stats -->
-    <header class="p-4 bg-black/40 backdrop-blur-md border-b border-purple-500/30 flex justify-between items-center shadow-xl z-10">
+    <header class="p-4 bg-black/40 backdrop-blur-md border-b border-purple-500/30 flex flex-wrap gap-4 justify-between items-center shadow-xl z-20 sticky top-0">
         <div class="flex items-center gap-4">
             <!-- Máu Phù Thủy -->
             <div class="flex flex-col">
@@ -119,10 +136,72 @@
             <p class="text-sm text-gray-300">Ải thứ: <span id="level-display" class="font-bold text-yellow-300">1/15</span></p>
         </div>
 
-        <div class="flex items-center gap-2 text-xl font-bold text-yellow-400 bg-yellow-900/40 px-4 py-2 rounded-xl border border-yellow-500/30">
-            <i class="fa-solid fa-coins"></i> <span id="score-display">0</span>
+        <div class="flex items-center gap-4">
+            <button onclick="openShop()" class="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white font-bold py-2 px-4 rounded-xl shadow-[0_0_15px_rgba(234,179,8,0.4)] transition transform hover:scale-105 border border-yellow-300">
+                <i class="fa-solid fa-store"></i> Cửa Hàng
+            </button>
+            <div class="flex items-center gap-2 text-xl font-bold text-yellow-400 bg-yellow-900/40 px-4 py-2 rounded-xl border border-yellow-500/30">
+                <i class="fa-solid fa-coins"></i> <span id="score-display">0</span>
+            </div>
         </div>
     </header>
+
+    <!-- Shop Modal -->
+    <div id="shop-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center hidden">
+        <div class="bg-gradient-to-b from-purple-900 to-gray-900 border-2 border-yellow-500 p-8 rounded-3xl max-w-2xl w-full text-center relative shadow-[0_0_50px_rgba(234,179,8,0.2)] transform transition-all duration-300">
+            <button onclick="closeShop()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-4xl">&times;</button>
+            <h2 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 mb-2">CỬA HÀNG MA THUẬT</h2>
+            <p class="text-gray-300 mb-6 font-semibold">Dùng điểm rèn luyện C++ để sắm đồ sịn!</p>
+            
+            <div class="flex justify-center mb-6 text-2xl font-bold text-yellow-400 bg-black/50 py-3 rounded-2xl w-1/2 mx-auto border border-yellow-500/30">
+                Ví tiền: <span id="shop-score-display" class="ml-2 mr-2">0</span> <i class="fa-solid fa-coins mt-1"></i>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                <!-- Item 1 -->
+                <div class="bg-black/50 p-4 rounded-xl border border-purple-500/30 flex justify-between items-center group hover:border-yellow-400 transition">
+                    <div>
+                        <div class="text-xl mb-1">🧪 <span class="font-bold text-white">Bình Lục Trà</span></div>
+                        <div class="text-sm text-gray-400">Hồi 1 Tim (Không vượt mức max)</div>
+                    </div>
+                    <button onclick="buyItem('heal')" class="bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg transition shrink-0">
+                        50 <i class="fa-solid fa-coins"></i>
+                    </button>
+                </div>
+                <!-- Item 2 -->
+                <div class="bg-black/50 p-4 rounded-xl border border-purple-500/30 flex justify-between items-center group hover:border-yellow-400 transition">
+                    <div>
+                        <div class="text-xl mb-1">❤️ <span class="font-bold text-white">Tim Vĩnh Cửu</span></div>
+                        <div class="text-sm text-gray-400">Tăng Số Tim Tối Đa lên 1 mức</div>
+                    </div>
+                    <button onclick="buyItem('maxhp')" id="btn-buy-maxhp" class="bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg transition shrink-0">
+                        200 <i class="fa-solid fa-coins"></i>
+                    </button>
+                </div>
+                <!-- Item 3 -->
+                <div class="bg-black/50 p-4 rounded-xl border border-purple-500/30 flex justify-between items-center group hover:border-yellow-400 transition">
+                    <div>
+                        <div class="text-xl mb-1">🪄 <span class="font-bold text-white">Đũa Nhân Đôi</span></div>
+                        <div class="text-sm text-gray-400">Nhân 2 Vàng thu được vĩnh viễn</div>
+                    </div>
+                    <button onclick="buyItem('double_gold')" id="btn-buy-gold" class="bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg transition shrink-0">
+                        500 <i class="fa-solid fa-coins"></i>
+                    </button>
+                </div>
+                <!-- Item 4 -->
+                <div class="bg-black/50 p-4 rounded-xl border border-purple-500/30 flex justify-between items-center group hover:border-yellow-400 transition">
+                    <div>
+                        <div class="text-xl mb-1">🛡️ <span class="font-bold text-white">Khiên Phép</span></div>
+                        <div class="text-sm text-gray-400">Chặn hậu quả mất máu 1 lần sai</div>
+                    </div>
+                    <button onclick="buyItem('shield')" id="btn-buy-shield" class="bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg transition shrink-0">
+                        150 <i class="fa-solid fa-coins"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="shop-message" class="mt-6 text-xl font-bold h-6"></div>
+        </div>
+    </div>
 
     <!-- Battle Arena -->
     <main class="flex-1 flex flex-col justify-center relative overflow-hidden px-4 py-6 z-10">
@@ -161,7 +240,7 @@
         </div>
 
         <!-- Question Panel -->
-        <div class="max-w-4xl w-full mx-auto bg-black/60 backdrop-blur-xl border-t-2 border-l-2 border-r-2 border-purple-500/50 rounded-t-3xl shadow-[0_-10px_30px_rgba(107,70,193,0.2)] flex-1 flex flex-col p-6">
+        <div class="max-w-4xl w-full mx-auto bg-black/60 backdrop-blur-xl border-2 border-purple-500/50 rounded-3xl shadow-[0_0_30px_rgba(107,70,193,0.2)] flex flex-col p-6 my-8 shrink-0">
             
             <div class="text-center mb-6">
                 <h2 id="question-text" class="text-xl md:text-2xl font-bold text-white leading-relaxed">
@@ -226,128 +305,33 @@
     </div>
 
     <script>
-        // --- NGÂN HÀNG CÂU HỎI LÝ THUYẾT (15 CÂU) ---
-        const questionData = [
-            {
-                monster: { name: "Slime Lỗi Code", icon: "🦠" },
-                question: "Để in một thông báo hoặc kết quả ra màn hình, pháp sư dùng 'bùa chú' nào trong C++?",
-                options: ["cin >>", "cout <<", "print()", "in_ra()"],
-                correct: 1,
-                explanation: "<b>cout</b> (character output) đi kèm với dấu <b><<</b> được dùng để xuất/in dữ liệu ra màn hình."
-            },
-            {
-                monster: { name: "Slime Lỗi Code", icon: "🦠" },
-                question: "Khi muốn nhận dữ liệu do người dùng NHẬP từ bàn phím, ta dùng lệnh gì?",
-                options: ["cout <<", "nhap >>", "cin >>", "input()"],
-                correct: 2,
-                explanation: "<b>cin</b> (character input) đi kèm với dấu <b>>></b> dùng để lấy dữ liệu nhập vào từ bàn phím."
-            },
-            {
-                monster: { name: "Goblin Trộm Dấu", icon: "👺" },
-                question: "Trong C++, để GÁN giá trị 10 cho biến x (lưu số 10 vào x), ta viết thế nào?",
-                options: ["x == 10;", "10 = x;", "x = 10;", "x := 10;"],
-                correct: 2,
-                explanation: "Phép gán trong C++ dùng MỘT dấu bằng <b>=</b>. Tên biến phải nằm bên trái, giá trị nằm bên phải (x = 10)."
-            },
-            {
-                monster: { name: "Goblin Trộm Dấu", icon: "👺" },
-                question: "Để SO SÁNH xem biến A có BẰNG biến B hay không, ta phải dùng ký hiệu nào?",
-                options: ["A = B", "A == B", "A === B", "A != B"],
-                correct: 1,
-                explanation: "Để kiểm tra/so sánh sự bằng nhau, ta bắt buộc phải dùng HAI dấu bằng viết liền nhau <b>==</b>. Một dấu = là phép gán."
-            },
-            {
-                monster: { name: "Dơi Toán Học", icon: "🦇" },
-                question: "Đâu là ký hiệu của phép CHIA LẤY DƯ trong C++? (Ví dụ: 10 chia 3 dư 1)",
-                options: ["/", "\\", "%", "mod"],
-                correct: 2,
-                explanation: "Ký hiệu <b>%</b> trong C++ không phải là phần trăm, mà là phép tính chia lấy phần dư."
-            },
-            {
-                monster: { name: "Dơi Toán Học", icon: "🦇" },
-                question: "Trong các phép toán sau, phép toán nào biểu diễn việc TĂNG biến x lên 1 đơn vị?",
-                options: ["x + 1", "x++", "x =+ 1", "Tất cả đều đúng"],
-                correct: 1,
-                explanation: "Toán tử <b>++</b> viết liền sau tên biến (x++) là cách viết ngắn gọn nhất để tăng giá trị biến đó lên 1."
-            },
-            {
-                monster: { name: "Kỵ Sĩ Điều Kiện", icon: "🧟‍♂️" },
-                question: "Để ra lệnh: 'NẾU điều kiện này đúng thì làm việc kia', ta dùng từ khóa nào?",
-                options: ["if", "for", "while", "else"],
-                correct: 0,
-                explanation: "Từ khóa <b>if</b> (nghĩa là 'nếu' trong tiếng Anh) dùng để tạo ra các cấu trúc rẽ nhánh điều kiện."
-            },
-            {
-                monster: { name: "Kỵ Sĩ Điều Kiện", icon: "🧟‍♂️" },
-                question: "Từ khóa nào luôn đi cặp với 'if' để xử lý trường hợp NGƯỢC LẠI (khi điều kiện if bị sai)?",
-                options: ["continue", "break", "else", "case"],
-                correct: 2,
-                explanation: "<b>else</b> (ngược lại) luôn đứng sau khối lệnh if. Nó sẽ chạy khi điều kiện của if là sai (false)."
-            },
-            {
-                monster: { name: "Hồn Ma Logic", icon: "👻" },
-                question: "Làm sao để nói: Điều kiện A 'KHÁC' Điều kiện B?",
-                options: ["A >< B", "A <> B", "A != B", "A !== B"],
-                correct: 2,
-                explanation: "Trong C++, dấu chấm than <b>!</b> đại diện cho sự phủ định. Do đó <b>!=</b> nghĩa là KHÔNG BẰNG (hay là Khác)."
-            },
-            {
-                monster: { name: "Hồn Ma Logic", icon: "👻" },
-                question: "Để yêu cầu cả 2 điều kiện PHẢI CÙNG ĐÚNG (Toán tử AND/VÀ), ta dùng ký hiệu gì?",
-                options: ["&&", "||", "++", "**"],
-                correct: 0,
-                explanation: "Hai dấu và viết liền nhau <b>&&</b> là toán tử AND logic. Kết quả chỉ đúng khi tất cả điều kiện đều đúng."
-            },
-            {
-                monster: { name: "Ma Sói Biến Số", icon: "🐺" },
-                question: "Pháp sư muốn lưu số tuổi (ví dụ: 12 tuổi), pháp sư nên dùng kiểu dữ liệu nào?",
-                options: ["string", "char", "int", "double"],
-                correct: 2,
-                explanation: "<b>int</b> (viết tắt của integer) là kiểu dữ liệu chuyên dùng để lưu các số nguyên (không có số lẻ/thập phân)."
-            },
-            {
-                monster: { name: "Ma Sói Biến Số", icon: "🐺" },
-                question: "Nếu muốn lưu số tiền lẻ như '15.5' xu, kiểu dữ liệu nào phù hợp nhất?",
-                options: ["int", "double", "bool", "string"],
-                correct: 1,
-                explanation: "<b>double</b> (hoặc float) là kiểu dữ liệu số thực, dùng để lưu trữ các con số có phần thập phân."
-            },
-            {
-                monster: { name: "Rồng Vòng Lặp", icon: "🐉" },
-                question: "Từ khóa nào dùng để tạo ra vòng lặp chạy 'TRONG KHI' điều kiện vẫn còn đúng?",
-                options: ["while", "if", "switch", "loop"],
-                correct: 0,
-                explanation: "<b>while</b> nghĩa là 'trong khi'. Vòng lặp while sẽ thực hiện mã liên tục miễn là điều kiện kiểm tra vẫn đúng."
-            },
-            {
-                monster: { name: "Rồng Vòng Lặp", icon: "🐉" },
-                question: "Lệnh nào có sức mạnh 'phá vỡ' (thoát ngay lập tức) khỏi vòng lặp đang chạy?",
-                options: ["stop", "break", "continue", "exit"],
-                correct: 1,
-                explanation: "<b>break</b> (phá vỡ) được dùng bên trong vòng lặp hoặc switch-case để dừng và thoát ra ngay lập tức."
-            },
-            {
-                monster: { name: "Vua Quái Vật Bug", icon: "👿" },
-                question: "Dấu chấm phẩy (;) trong C++ có ý nghĩa quan trọng gì?",
-                options: [
-                    "Để trang trí cho code đẹp hơn", 
-                    "Dùng để comment (ghi chú) code", 
-                    "Kết thúc một câu lệnh", 
-                    "Đại diện cho lệnh in ra màn hình"
-                ],
-                correct: 2,
-                explanation: "Trong C++, <b>dấu chấm phẩy (;)</b> cực kỳ quan trọng. Nó đánh dấu sự <b>kết thúc của một câu lệnh</b>. Thiếu nó, chương trình sẽ báo lỗi!"
+        // --- GAME STATE & LOCAL STORAGE ---
+        let stats = {
+            gold: 0,
+            maxHp: 3,
+            hasDoubleGold: false,
+            hasShield: false
+        };
+
+        function loadStats() {
+            const saved = localStorage.getItem('phuthuycode_stats');
+            if (saved) {
+                stats = JSON.parse(saved);
             }
-        ];
+        }
 
-        // --- GAME STATE ---
+        function saveStats() {
+            localStorage.setItem('phuthuycode_stats', JSON.stringify(stats));
+        }
+
         let currentLevel = 0;
-        let playerHP = 3;
-        let score = 0;
+        let playerBP = 3; 
         let isAnimating = false;
+        let activeQuestions = [];
+        let totalQuestionsLimit = 200; 
 
-        // --- DOM ELEMENTS ---
-        const hpHearts = document.querySelectorAll('.hp-heart');
+        // --- DOM ---
+        const hpContainer = document.getElementById('player-hp');
         const scoreDisplay = document.getElementById('score-display');
         const levelDisplay = document.getElementById('level-display');
         
@@ -360,43 +344,85 @@
         const monsterHpBar = document.getElementById('monster-hp-bar');
         const spellParticle = document.getElementById('spell-particle');
 
-        // Modals
         const feedbackModal = document.getElementById('feedback-modal');
         const feedbackExp = document.getElementById('feedback-explanation');
         const gameOverModal = document.getElementById('game-over-modal');
         const victoryModal = document.getElementById('victory-modal');
         const finalGold = document.getElementById('final-gold');
+        
+        const shopModal = document.getElementById('shop-modal');
+        const shopScoreDisplay = document.getElementById('shop-score-display');
+        const shopMessage = document.getElementById('shop-message');
 
-        // --- INITIALIZE GAME ---
         function initGame() {
+            loadStats();
+            playerBP = stats.maxHp; 
+            
+            renderHpUI();
+            updateGoldUI();
+
+            // Load from data file
+            activeQuestions = typeof getRandomQuestionsPool === 'function' ? getRandomQuestionsPool(totalQuestionsLimit) : questionData;
+            
+            // Lỡ có lỗi js chưa nạp được, phòng hờ fallback
+            if (!activeQuestions || activeQuestions.length === 0) {
+                activeQuestions = [{monster:{name:"Bug",icon:"🦠"},question:"Chưa nạp được câu hỏi. F5 lại trang!",options:["Đồng ý","Ko"],correct:0,explanation:"Lỗi!"}];
+            }
+
+            currentLevel = 0;
             loadQuestion();
         }
 
+        function renderHpUI() {
+            hpContainer.innerHTML = '';
+            for(let i = 0; i < stats.maxHp; i++) {
+                let heartIcon = document.createElement('i');
+                if (i < playerBP) {
+                    heartIcon.className = 'fa-solid fa-heart text-red-500 text-xl hp-heart transition';
+                } else {
+                    heartIcon.className = 'fa-solid fa-heart-crack text-gray-600 text-xl hp-heart transition';
+                }
+                hpContainer.appendChild(heartIcon);
+            }
+            
+            if (stats.hasShield && document.getElementById('shield-icon') == null) {
+                let shield = document.createElement('i');
+                shield.id = 'shield-icon';
+                shield.className = 'fa-solid fa-shield-halved text-blue-400 text-xl ml-2 drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]';
+                hpContainer.appendChild(shield);
+            } else if (!stats.hasShield && document.getElementById('shield-icon')) {
+                document.getElementById('shield-icon').remove();
+            }
+        }
+
+        function updateGoldUI() {
+            scoreDisplay.innerText = stats.gold;
+            shopScoreDisplay.innerText = stats.gold;
+            saveStats();
+        }
+
         function loadQuestion() {
-            const data = questionData[currentLevel];
+            if (currentLevel >= activeQuestions.length) {
+                showVictory();
+                return;
+            }
+
+            const data = activeQuestions[currentLevel];
             isAnimating = false;
 
-            // Update Header
-            levelDisplay.innerText = `${currentLevel + 1}/${questionData.length}`;
-            
-            // Update Monster Info
+            levelDisplay.innerText = `${currentLevel + 1}/${activeQuestions.length}`;
             monsterChar.innerText = data.monster.icon;
             monsterName.innerText = data.monster.name;
-            // Đầy máu cho quái mới (hoặc quái hiện tại sau khi trả lời sai)
             monsterHpBar.style.width = '100%';
 
-            // Update Text
             questionText.innerHTML = data.question;
 
-            // Build Options
             optionsContainer.innerHTML = '';
             data.options.forEach((opt, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'answer-btn w-full text-left p-4 rounded-xl text-lg font-bold text-gray-200 flex items-center gap-4 group';
                 
-                // Ký tự A, B, C, D
                 const letter = String.fromCharCode(65 + index);
-                
                 btn.innerHTML = `
                     <div class="w-8 h-8 rounded-full bg-purple-600/50 text-purple-200 flex items-center justify-center font-black group-hover:bg-purple-500 transition border border-purple-400/50">
                         ${letter}
@@ -410,104 +436,155 @@
         }
 
         function checkAnswer(selectedIndex, btnElement) {
-            if (isAnimating) return; // Khóa không cho bấm liên tục
+            if (isAnimating) return; 
             isAnimating = true;
 
-            const data = questionData[currentLevel];
+            const data = activeQuestions[currentLevel];
             const isCorrect = (selectedIndex === data.correct);
 
-            // Xóa sự kiện click của tất cả nút
             Array.from(optionsContainer.children).forEach(b => b.onclick = null);
 
             if (isCorrect) {
-                // ĐÁP ÁN ĐÚNG
                 btnElement.classList.add('answer-correct');
-                
-                // 1. Phù thủy lao lên
                 playerChar.classList.add('anim-attack-player');
                 
-                // 2. Phóng bùa chú
                 setTimeout(() => {
                     spellParticle.style.opacity = '1';
-                    spellParticle.style.transform = 'translate(400px, -50px) scale(2) rotate(360deg)';
+                    spellParticle.style.transform = 'translate(400px, -50px) scale(2.5) rotate(360deg)';
                 }, 100);
 
-                // 3. Quái vật bị trúng đòn
                 setTimeout(() => {
-                    spellParticle.style.opacity = '0'; // Giấu bùa chú đi
-                    spellParticle.style.transform = 'translate(0, 0) scale(1) rotate(0deg)'; // reset
+                    spellParticle.style.opacity = '0'; 
+                    spellParticle.style.transform = 'translate(0, 0) scale(1) rotate(0deg)'; 
                     
                     monsterChar.classList.add('anim-hurt');
-                    monsterHpBar.style.width = '0%'; // Quái vật chết
+                    monsterHpBar.style.width = '0%'; 
                     
-                    // Cộng điểm
-                    score += 50;
-                    scoreDisplay.innerText = score;
+                    let baseGold = 50;
+                    if (stats.hasDoubleGold) baseGold *= 2;
+                    stats.gold += baseGold;
+                    updateGoldUI();
 
-                    // Bay chữ +50
-                    showFloatingText('+50', monsterChar);
+                    showFloatingText(`+${baseGold}`, monsterChar);
                 }, 400);
 
-                // 4. Qua màn sau khi diễn hoạt xong
                 setTimeout(() => {
                     playerChar.classList.remove('anim-attack-player');
                     monsterChar.classList.remove('anim-hurt');
-                    
                     currentLevel++;
-                    if (currentLevel < questionData.length) {
-                        loadQuestion();
-                    } else {
-                        showVictory();
-                    }
+                    loadQuestion();
                 }, 1200);
 
             } else {
-                // ĐÁP ÁN SAI
                 btnElement.classList.add('answer-wrong');
-                
-                // Highlight đáp án đúng
                 const correctBtn = optionsContainer.children[data.correct];
                 correctBtn.classList.add('answer-correct');
 
-                // 1. Quái vật lao lên tấn công
                 monsterChar.classList.add('anim-attack-monster');
 
-                // 2. Phù thủy bị thương, mất máu
                 setTimeout(() => {
-                    playerChar.classList.add('anim-hurt');
-                    takeDamage();
+                    if (stats.hasShield) {
+                        stats.hasShield = false;
+                        saveStats();
+                        renderHpUI();
+                        showFloatingText("🛡️ Đỡ đòn!", playerChar, "text-blue-400");
+                    } else {
+                        playerChar.classList.add('anim-hurt');
+                        playerBP--;
+                        renderHpUI();
+                        showFloatingText("-1 HP", playerChar, "text-red-500");
+                        
+                        if (playerBP <= 0) {
+                            setTimeout(showGameOver, 800);
+                            return; 
+                        }
+                    }
                 }, 300);
 
-                // 3. Hiện Popup giải thích
                 setTimeout(() => {
                     playerChar.classList.remove('anim-hurt');
                     monsterChar.classList.remove('anim-attack-monster');
-                    
-                    if (playerHP > 0) {
-                        showFeedback(data.explanation);
+                    if (playerBP > 0) {
+                        showFeedback(data.explanation); 
                     }
-                }, 1000);
+                }, 1200);
             }
         }
 
-        function takeDamage() {
-            playerHP--;
-            // Cập nhật UI tim
-            for (let i = 0; i < 3; i++) {
-                if (i < playerHP) {
-                    hpHearts[i].classList.replace('fa-heart-crack', 'fa-heart');
-                    hpHearts[i].classList.replace('text-gray-600', 'text-red-500');
-                } else {
-                    hpHearts[i].classList.replace('fa-heart', 'fa-heart-crack');
-                    hpHearts[i].classList.replace('text-red-500', 'text-gray-600');
+        // --- SHOP & UI LOGIC ---
+        function openShop() {
+            shopMessage.innerText = "";
+            renderShopButtons();
+            shopModal.classList.remove('hidden');
+        }
+        function closeShop() {
+            shopModal.classList.add('hidden');
+        }
+
+        function renderShopButtons() {
+            if (stats.hasDoubleGold) {
+                let w = document.getElementById('btn-buy-gold');
+                w.innerText = "Đã Sở Hữu";
+                w.className = "bg-gray-600 text-gray-300 font-bold py-2 px-4 rounded-lg shrink-0 w-28 cursor-not-allowed";
+                w.disabled = true;
+            }
+            if (stats.hasShield) {
+                let s = document.getElementById('btn-buy-shield');
+                s.innerText = "Đã Có";
+                s.className = "bg-gray-600 text-gray-300 font-bold py-2 px-4 rounded-lg shrink-0 w-28 cursor-not-allowed";
+                s.disabled = true;
+            }
+        }
+
+        function buyItem(type) {
+            let cost = 0;
+            if (type === 'heal') cost = 50;
+            if (type === 'maxhp') cost = 200;
+            if (type === 'double_gold') cost = 500;
+            if (type === 'shield') cost = 150;
+
+            if (stats.gold < cost) {
+                shopMessage.innerText = "Không đủ vàng!";
+                shopMessage.className = "mt-6 text-lg font-bold text-red-500 text-center";
+                return;
+            }
+
+            if (type === 'heal') {
+                if (playerBP >= stats.maxHp) {
+                    shopMessage.innerText = "Tim đã đầy, không cần mua!";
+                    shopMessage.className = "mt-6 text-lg font-bold text-red-400 text-center";
+                    return;
                 }
+                playerBP++;
+            }
+            if (type === 'maxhp') {
+                stats.maxHp++;
+                playerBP++; 
+            }
+            if (type === 'double_gold') {
+                if (stats.hasDoubleGold) return;
+                stats.hasDoubleGold = true;
+            }
+            if (type === 'shield') {
+                if (stats.hasShield) {
+                    shopMessage.innerText = "Bạn đang có Khiên rồi!";
+                    shopMessage.className = "mt-6 text-lg font-bold text-yellow-400 text-center";
+                    return;
+                }
+                stats.hasShield = true;
             }
 
-            if (playerHP <= 0) {
-                setTimeout(showGameOver, 500);
-            }
+            stats.gold -= cost;
+            updateGoldUI();
+            renderHpUI();
+            renderShopButtons();
+
+            shopMessage.innerText = "Giao dịch thành công!";
+            shopMessage.className = "mt-6 text-lg font-bold text-green-400 text-center";
         }
 
+
+        // --- MODAL CONTROLS ---
         function showFeedback(explanationHTML) {
             feedbackExp.innerHTML = explanationHTML;
             feedbackModal.classList.remove('hidden');
@@ -515,7 +592,7 @@
 
         function closeFeedback() {
             feedbackModal.classList.add('hidden');
-            loadQuestion(); // Tải lại chính câu hỏi đó để chơi tiếp
+            loadQuestion(); 
         }
 
         function showGameOver() {
@@ -523,20 +600,19 @@
         }
 
         function showVictory() {
-            finalGold.innerText = score;
+            finalGold.innerText = stats.gold; 
             victoryModal.classList.remove('hidden');
         }
 
-        function showFloatingText(text, targetElement) {
+        function showFloatingText(text, targetElement, colorClass = "text-yellow-400") {
             const rect = targetElement.getBoundingClientRect();
             const floater = document.createElement('div');
             floater.innerText = text;
-            floater.className = 'absolute font-black text-3xl text-yellow-400 drop-shadow-md pointer-events-none transition-all duration-1000 z-50';
+            floater.className = `fixed font-black text-3xl ${colorClass} drop-shadow-md pointer-events-none transition-all duration-1000 z-50`;
             floater.style.left = `${rect.left + 50}px`;
             floater.style.top = `${rect.top}px`;
             document.body.appendChild(floater);
 
-            // Kích hoạt animation CSS
             setTimeout(() => {
                 floater.style.transform = 'translateY(-100px) scale(1.5)';
                 floater.style.opacity = '0';
@@ -547,7 +623,6 @@
             }, 1000);
         }
 
-        // Chạy game
         window.onload = initGame;
     </script>
 </body>
