@@ -346,7 +346,7 @@
                 topic: "Phép Cộng (+)",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">a</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">5</span>;\n<span class="text-yellow-200">a</span> <span class="text-sky-400">=</span> <span class="text-yellow-200">a</span> <span class="text-sky-400">+</span> <span class="text-emerald-400">3</span>;`,
                 question: "CPU sẽ xử lý lệnh này thế nào?",
-                options: ["Lấy 5 + 3 = 8, ghi đè số 8 vào hộp 'a'.", "Tạo thêm 1 hộp tên là '3'.", "In số 8 ra màn hình."],
+                options: ["Tính 5 + 3 = 8, rồi ghi đè số 8 TRỞ LẠI vào trong hộp 'a'.", "Tạo ra một chiếc hộp MỚI tên là 'a' để chứa số 8.", "Lấy 5 nối với 3 thành số 53."],
                 correct: 0, action: "MATH_OP", varName: "a", oldVal: "5", operator: "+", num: "3", newVal: "8",
                 explanation: "Đúng! Nó luôn tính toán bên PHẢI dấu bằng trước, rồi mới cất kết quả vào hộp bên TRÁI."
             },
@@ -354,7 +354,7 @@
                 topic: "Phép Trừ (-)",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">mau</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">100</span>;\n<span class="text-yellow-200">mau</span> <span class="text-sky-400">=</span> <span class="text-yellow-200">mau</span> <span class="text-sky-400">-</span> <span class="text-emerald-400">20</span>;`,
                 question: "Sau dòng lệnh này, hộp 'mau' còn bao nhiêu?",
-                options: ["20", "100", "80"],
+                options: ["Vẫn còn 100 (Vì chưa có lệnh lưu).", "Còn 20 (Vì 100 bị trừ hết, chỉ còn số trừ).", "Còn 80 (Lấy 100 trừ 20 còn 80)."],
                 correct: 2, action: "MATH_OP", varName: "mau", oldVal: "100", operator: "-", num: "20", newVal: "80",
                 explanation: "Giỏi lắm! 100 trừ 20 còn 80, CPU thay số 100 bằng số 80."
             },
@@ -362,7 +362,7 @@
                 topic: "Phép Nhân (*)",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">vang</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">10</span>;\n<span class="text-yellow-200">vang</span> <span class="text-sky-400">=</span> <span class="text-yellow-200">vang</span> <span class="text-sky-400">*</span> <span class="text-emerald-400">2</span>;`,
                 question: "Dấu * trong lập trình đại diện cho phép tính gì?",
-                options: ["Phép bình phương.", "Phép nhân.", "Ký tự đặc biệt."],
+                options: ["Phép phóng to biến lên gấp đôi.", "Phép Nhân (Vì bàn phím không có dấu x).", "Ký tự trang trí cho đẹp code."],
                 correct: 1, action: "MATH_OP", varName: "vang", oldVal: "10", operator: "*", num: "2", newVal: "20",
                 explanation: "Đúng! Máy tính không dùng dấu 'x' để nhân, mà dùng dấu sao (*)."
             },
@@ -370,7 +370,7 @@
                 topic: "Phép Chia Nguyên (/)",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">banh</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">10</span>;\n<span class="text-yellow-200">banh</span> <span class="text-sky-400">=</span> <span class="text-yellow-200">banh</span> <span class="text-sky-400">/</span> <span class="text-emerald-400">3</span>;`,
                 question: "Vì hộp 'banh' là số nguyên (int), nên 10 chia 3 sẽ ra bao nhiêu?",
-                options: ["3.333", "3", "Lỗi"],
+                options: ["3.333 (Tính ra kết quả chính xác tuyệt đối).", "3 (Chỉ lấy phần nguyên, vứt phần thập phân).", "4 (Làm tròn lên cho đủ)."],
                 correct: 1, action: "MATH_OP", varName: "banh", oldVal: "10", operator: "/", num: "3", newVal: "3",
                 explanation: "Rất xuất sắc! Số nguyên chia số nguyên thì phần dư bị vứt đi, kết quả chỉ lấy phần nguyên là 3."
             },
@@ -378,7 +378,7 @@
                 topic: "Phép Lấy Dư (%)",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">du</span>;\n<span class="text-yellow-200">du</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">10</span> <span class="text-sky-400">%</span> <span class="text-emerald-400">3</span>;`,
                 question: "Ký hiệu % có nghĩa là Lấy phần dư. Vậy 10 % 3 ra bao nhiêu?",
-                options: ["3", "1", "10"],
+                options: ["3 (Là kết quả của phép chia).", "1 (Vì 10 chia 3 được 3, còn DƯ 1).", "0.333 (Là phần lẻ phía sau)."],
                 correct: 1, action: "MATH_OP", varName: "du", oldVal: "0", operator: "%", num: "3", newVal: "1",
                 explanation: "Chính xác! 10 chia 3 được 3, dư 1. Phép % sẽ trả về con số 1 này."
             },
@@ -386,7 +386,7 @@
                 topic: "Phép Cộng Dồn (+=)",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">diem</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">10</span>;\n<span class="text-yellow-200">diem</span> <span class="text-sky-400">+=</span> <span class="text-emerald-400">5</span>;`,
                 question: "Lệnh <code>diem += 5;</code> là cách viết TẮT của lệnh nào?",
-                options: ["diem = 5;", "diem = diem + 5;", "diem + 5 = diem;"],
+                options: ["diem = 5; (Gán diem bằng 5).", "diem = diem + 5; (Cộng thêm 5 vào diem).", "5 = diem + 5; (Lấy 5 cộng diem)."],
                 correct: 1, action: "MATH_OP", varName: "diem", oldVal: "10", operator: "+=", num: "5", newVal: "15",
                 explanation: "Tuyệt vời! Lập trình viên rất lười gõ dài, nên họ chế ra dấu += để viết cho lẹ."
             },
@@ -394,7 +394,7 @@
                 topic: "Phép Trừ Dồn (-=)",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">mau</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">100</span>;\n<span class="text-yellow-200">mau</span> <span class="text-sky-400">-=</span> <span class="text-emerald-400">20</span>;`,
                 question: "Hộp 'mau' sẽ còn lại giá trị bao nhiêu?",
-                options: ["80", "120", "20"],
+                options: ["80 (Vì 100 - 20 = 80).", "120 (Vì trừ của trừ là cộng).", "-20 (Vì lấy 0 - 20)."],
                 correct: 0, action: "MATH_OP", varName: "mau", oldVal: "100", operator: "-=", num: "20", newVal: "80",
                 explanation: "Đúng! Nó giống hệt như mau = mau - 20."
             },
@@ -402,7 +402,7 @@
                 topic: "Toán Tử Tăng (++)",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">level</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">1</span>;\n<span class="text-yellow-200">level</span><span class="text-sky-400">++</span>;`,
                 question: "Dấu ++ viết liền sau tên biến có ý nghĩa gì?",
-                options: ["Gấp đôi giá trị biến.", "Tăng biến đó lên chính xác 1 đơn vị.", "Chỉnh độ ưu tiên cao nhất."],
+                options: ["Tăng biến đó lên gấp đôi (x2).", "Tăng biến đó lên chính xác 1 đơn vị (+1).", "Cộng thêm 2 đơn vị (++)."],
                 correct: 1, action: "MATH_OP", varName: "level", oldVal: "1", operator: "++", num: "", newVal: "2",
                 explanation: "Đúng! <code>level++</code> là cách ngắn nhất để nói 'Hãy cộng 1 cho tôi'."
             },
@@ -410,7 +410,7 @@
                 topic: "Toán Tử Giảm (--)",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">mang</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">3</span>;\n<span class="text-yellow-200">mang</span><span class="text-sky-400">--</span>;`,
                 question: "Bị trừ mạng! Dấu -- sẽ làm gì?",
-                options: ["Giảm biến đó đi 1 đơn vị.", "Xóa biến đó đi.", "Biến biến đó thành số âm."],
+                options: ["Giảm biến đó đi 1 đơn vị.", "Xóa biến đó vĩnh viễn khỏi RAM.", "Biến số dương thành số âm (-)."],
                 correct: 0, action: "MATH_OP", varName: "mang", oldVal: "3", operator: "--", num: "", newVal: "2",
                 explanation: "Chuẩn! Toán tử -- rất hay dùng trong đếm ngược."
             },
@@ -420,15 +420,15 @@
                 topic: "Khối Điều Kiện (if)",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">diem</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">8</span>;\n<span class="text-purple-400">if</span> (<span class="text-yellow-200">diem</span> <span class="text-sky-400">&gt;</span> <span class="text-emerald-400">5</span>) {\n  <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Do"</span>;\n}`,
                 question: "Khi gặp lệnh <code>if (diem > 5)</code>, CPU sẽ kiểm tra. Vì 8 lớn hơn 5 nên nó làm gì?",
-                options: ["Bỏ qua chữ 'Do'.", "Mở ngoặc nhọn, chạy khối lệnh bên trong và in ra chữ 'Do'.", "In ra chữ 'diem > 5'."],
-                correct: 1, action: "COMPARE", varName: "diem", val: "8", checkVal: "5", operator: ">", result: true,
+                options: ["Do điều kiện đúng, nó MỞ CỔNG chạy lệnh bên trong và in ra chữ 'Do'.", "Nó bỏ qua, không làm gì cả.", "Nó in ra chữ 'False' vì máy tính không hiểu tiếng Việt."],
+                correct: 0, action: "COMPARE", varName: "diem", val: "8", checkVal: "5", operator: ">", result: true,
                 explanation: "Hoàn hảo! 'if' là cái cổng. Điều kiện ĐÚNG (True) thì cổng mở, lệnh bên trong được chạy."
             },
             {
                 topic: "Khối Điều Kiện Sai",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">diem</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">3</span>;\n<span class="text-purple-400">if</span> (<span class="text-yellow-200">diem</span> <span class="text-sky-400">&gt;</span> <span class="text-emerald-400">5</span>) {\n  <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Do"</span>;\n}`,
                 question: "Lần này diem = 3. Điều kiện (3 > 5) là SAI (False). CPU sẽ làm gì?",
-                options: ["Vẫn in chữ 'Do'.", "Sửa số 3 thành 6.", "Đóng cổng! Lơ luôn toàn bộ khối lệnh bên trong ngoặc nhọn."],
+                options: ["Vẫn in chữ 'Do' vì máy tính rất nhiệt tình.", "Sửa số 3 thành 6 để cho Đúng.", "ĐÓNG CỔNG! Lơ luôn toàn bộ khối lệnh bên trong ngoặc nhọn."],
                 correct: 2, action: "COMPARE", varName: "diem", val: "3", checkVal: "5", operator: ">", result: false,
                 explanation: "Đúng rồi! Cổng đóng lại, code bên trong bị lướt qua như chưa từng tồn tại."
             },
@@ -436,7 +436,7 @@
                 topic: "So Sánh Bằng (==)",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">mk</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">123</span>;\n<span class="text-purple-400">if</span> (<span class="text-yellow-200">mk</span> <span class="text-sky-400">==</span> <span class="text-emerald-400">123</span>) {\n  <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Mo"</span>;\n}`,
                 question: "Tại sao so sánh lại dùng HAI dấu bằng (==) thay vì MỘT dấu (=)?",
-                options: ["Vì mật khẩu dài.", "Vì 1 dấu (=) là GÁN, còn 2 dấu (==) mới là HỎI SO SÁNH.", "Cho đẹp."],
+                options: ["Vì mật khẩu quan trọng nên cần 2 dấu bằng cho chắc chắn.", "Vì (=) là GÁN giá trị, còn (==) mới là SO SÁNH xem có bằng nhau không.", "Dùng (=) hay (==) đều được, máy tính tự hiểu."],
                 correct: 1, action: "COMPARE", varName: "mk", val: "123", checkVal: "123", operator: "==", result: true,
                 explanation: "Chính xác! Cực kỳ quan trọng: (=) là nhét đồ vào, (==) là soi kính lúp kiểm tra."
             },
@@ -444,7 +444,7 @@
                 topic: "So Sánh Khác (!=)",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">the</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">0</span>;\n<span class="text-purple-400">if</span> (<span class="text-yellow-200">the</span> <span class="text-sky-400">!=</span> <span class="text-emerald-400">1</span>) {\n  <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Sai the!"</span>;\n}`,
                 question: "Ký hiệu chấm than bằng (!=) có nghĩa là gì?",
-                options: ["Gấp than.", "KHÁC (Không bằng).", "Lớn hơn."],
+                options: ["Nghĩa là 'Bắt buộc phải bằng'.", "Nghĩa là 'KHÁC' (Không bằng).", "Nghĩa là 'Gần bằng'."],
                 correct: 1, action: "COMPARE", varName: "the", val: "0", checkVal: "1", operator: "!=", result: true,
                 explanation: "Tuyệt! Dấu chấm than (!) trong C++ luôn đại diện cho sự Phủ định (Không)."
             },
@@ -496,7 +496,7 @@
                 topic: "Đảo Ngược Logic (!)",
                 code: `<span class="text-purple-400">if</span> (<span class="text-sky-400">!</span>(<span class="text-yellow-200">a</span> <span class="text-sky-400">&gt;</span> <span class="text-emerald-400">5</span>))`,
                 question: "Biết a = 10. Điều kiện (a > 5) là ĐÚNG. Vậy !(a > 5) là gì?",
-                options: ["Vẫn là Đúng.", "Thành SAI (False).", "Báo lỗi cú pháp."],
+                options: ["Vẫn là Đúng (Dấu ! chỉ để nhấn mạnh).", "Đảo ngược thành SAI (False).", "Báo lỗi cú pháp (Vì dấu ! phải đứng sau)."],
                 correct: 1, action: "COMPARE", varName: "a", val: "10", checkVal: "5", operator: ">", result: false,
                 explanation: "Xuất sắc! Dấu ! (NOT) sẽ lật ngược vấn đề. Đúng thành Sai, Sai thành Đúng."
             },
@@ -504,7 +504,7 @@
                 topic: "Thứ Tự Ưu Tiên Toán Học",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">kq</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">2</span> <span class="text-sky-400">+</span> <span class="text-emerald-400">3</span> <span class="text-sky-400">*</span> <span class="text-emerald-400">4</span>;`,
                 question: "RAM sẽ lưu số mấy vào hộp 'kq'?",
-                options: ["20 (Vì 2+3=5, rồi 5*4=20)", "14 (Vì 3*4=12, rồi 2+12=14)", "10"],
+                options: ["20 (Vì 2+3=5, sau đó 5*4=20).", "14 (Vì 3*4=12, sau đó 2+12=14).", "10 (Máy tính thích số tròn chục)."],
                 correct: 1, action: "MATH_OP", varName: "kq", oldVal: "0", operator: "=", num: "2+3*4", newVal: "14",
                 explanation: "Chuẩn! Nhân chia trước, cộng trừ sau. Máy tính tuân thủ tuyệt đối quy tắc này."
             },
@@ -512,7 +512,7 @@
                 topic: "Chia Lấy Nguyên (Integer Division)",
                 code: `<span class="text-blue-400">float</span> <span class="text-yellow-200">kq</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">5</span> <span class="text-sky-400">/</span> <span class="text-emerald-400">2</span>;`,
                 question: "Cẩn thận! 5 và 2 đều là số nguyên. Vậy 5/2 bằng mấy?",
-                options: ["2.5", "2", "3"],
+                options: ["2.5 (Chia ra kết quả thực).", "2 (Vì số nguyên chia nhau sẽ vứt bỏ phần dư).", "3 (Làm tròn lên)."],
                 correct: 1, action: "ASSIGN_VAL", varName: "kq", val: "2",
                 explanation: "Chính xác! Trong C++, Số Nguyên chia Số Nguyên sẽ LUÔN RA Số Nguyên (bỏ phần thập phân đi). Muốn ra 2.5 phải viết 5.0 / 2."
             },
@@ -520,7 +520,7 @@
                 topic: "Khai Báo Nhiều Biến",
                 code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">x</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">1</span>, <span class="text-yellow-200">y</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">2</span>;`,
                 question: "Lệnh này làm gì?",
-                options: ["Báo lỗi vì chỉ được khai báo từng dòng.", "Tạo 2 biến x và y cùng lúc.", "Chỉ tạo biến y."],
+                options: ["Báo lỗi vì mỗi dòng chỉ được khai báo 1 biến.", "Tạo 2 biến x và y cùng một lúc.", "Chỉ tạo biến y, biến x bị bỏ qua."],
                 correct: 1, action: "CREATE_VAR", varName: "x, y", val: "1, 2",
                 explanation: "Đúng! Dấu phẩy (,) cho phép khai báo một dây chuyền các biến cùng kiểu dữ liệu."
             },
@@ -528,7 +528,7 @@
                 topic: "Hằng Số (Constant)",
                 code: `<span class="text-purple-400">const</span> <span class="text-blue-400">int</span> <span class="text-yellow-200">MAX</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">100</span>;\n<span class="text-yellow-200">MAX</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">200</span>;`,
                 question: "Chuyện gì xảy ra khi cố tình thay đổi giá trị biến const?",
-                options: ["RAM thay số 100 thành 200.", "Trình biên dịch BÁO LỖI ngay lập tức!", "Không làm gì cả."],
+                options: ["RAM thay số 100 thành 200 như bình thường.", "Trình biên dịch BÁO LỖI! Không cho phép sửa.", "Không làm gì cả, giữ nguyên 100."],
                 correct: 1, action: "ASSIGN_VAL", varName: "MAX", val: "ERR",
                 explanation: "Tuyệt vời! const (constant) nghĩa là 'Bất biến'. Đã đặt là 100 thì mãi mãi là 100."
             },
@@ -536,7 +536,7 @@
                 topic: "Chuyển Đổi Kiểu (Casting)",
                 code: `<span class="text-blue-400">double</span> <span class="text-yellow-200">pi</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">3.14</span>;\n<span class="text-blue-400">int</span> <span class="text-yellow-200">so</span> <span class="text-sky-400">=</span> (<span class="text-blue-400">int</span>)<span class="text-yellow-200">pi</span>;`,
                 question: "Khi ép biến pi (3.14) thành kiểu int, hộp 'so' sẽ chứa gì?",
-                options: ["3", "3.14", "4 (Làm tròn)"],
+                options: ["3 (Cắt bỏ phần thập phân).", "3.14 (Giữ nguyên).", "4 (Tự động làm tròn)."],
                 correct: 0, action: "ASSIGN_VAL", varName: "so", val: "3",
                 explanation: "Đúng! Ép sang int sẽ chặt bỏ hoàn toàn phần đuôi thập phân, không làm tròn."
             },
@@ -544,7 +544,7 @@
                 topic: "Vòng Lặp (Concept)",
                 code: `<span class="text-purple-400">while</span> (<span class="text-yellow-200">pin</span> <span class="text-sky-400">&lt;</span> <span class="text-emerald-400">100</span>) {\n  <span class="text-yellow-200">pin</span><span class="text-sky-400">++</span>;\n}`,
                 question: "Lệnh 'while' sẽ yêu cầu CPU làm gì?",
-                options: ["Chạy lệnh pin++ đúng 1 lần.", "Lặp đi lặp lại việc sạc pin (tăng pin) MIỄN LÀ pin còn dưới 100.", "Không làm gì."],
+                options: ["Chạy lệnh pin++ đúng 1 lần duy nhất.", "Lặp đi lặp lại việc tăng pin cho đến khi đầy 100.", "Đứng im đợi pin tự đầy."],
                 correct: 1, action: "MATH_OP", varName: "pin++", oldVal: "...", operator: "loop", newVal: "100",
                 explanation: "Chính xác! 'while' là vòng lặp. Nó bắt CPU làm việc quần quật cho đến khi điều kiện sai mới thôi."
             },
@@ -552,7 +552,7 @@
                 topic: "Vòng Lặp Check (Do-While)",
                 code: `<span class="text-purple-400">do</span> {\n  <span class="text-blue-400">cin</span> <span class="text-sky-400">&gt;&gt;</span> <span class="text-yellow-200">mk</span>;\n} <span class="text-purple-400">while</span> (<span class="text-yellow-200">mk</span> <span class="text-sky-400">!=</span> <span class="text-emerald-400">123</span>);`,
                 question: "Đoạn code này dùng để làm gì?",
-                options: ["Nhập mật khẩu 1 lần.", "Bắt người dùng nhập lại mật khẩu HOÀI cho đến khi đúng là 123 mới tha.", "In mật khẩu ra."],
+                options: ["Chỉ cho phép nhập mật khẩu đúng 1 lần.", "Bắt nhập mật khẩu mãi cho đến khi đúng 123 mới thôi.", "In mật khẩu ra màn hình."],
                 correct: 1, action: "CIN_VAR", varName: "mk", inputVal: "123",
                 explanation: "Chuẩn! Đây là cách các ứng dụng bắt bạn nhập đúng mật khẩu mới cho Login."
             },
@@ -562,7 +562,7 @@
                 topic: "Switch Case (Rẽ nhánh)", 
                 code: `<span class="text-purple-400">switch</span> (<span class="text-yellow-200">phim</span>) {\n  <span class="text-purple-400">case</span> <span class="text-emerald-400">1</span>: <span class="text-blue-400">cout</span> &lt;&lt; <span class="text-orange-300">"Start"</span>;\n  <span class="text-purple-400">break</span>;\n}`,
                 question: "Lệnh 'switch' hoạt động giống như cái gì?",
-                options: ["Cái công tắc điện.", "Bảng điều khiển nhiều nút bấm. Bấm nút nào (case) thì chức năng đó chạy.", "Vòng lặp vô tận."],
+                options: ["Giống cái công tắc bóng đèn bật/tắt.", "Giống bảng điều khiển thang máy (Bấm số nào chạy lệnh đó).", "Giống một vòng lặp vô tận."],
                 correct: 1, action: "COMPARE", varName: "phim", val: "1", checkVal: "1", operator: "==", result: true,
                 explanation: "Đúng! Switch cực tiện lợi khi bạn muốn xử lý menu game (Ví dụ: 1.Chơi, 2.Cài đặt, 3.Thoát)."
             },
