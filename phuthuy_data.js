@@ -64,6 +64,12 @@ for (let i = 0; i < 50; i++) {
     let wrong3 = Math.floor(Math.random() * 100); 
     
     let opts = [res.toString(), wrong1.toString(), wrong2.toString(), wrong3.toString()];
+    opts = [...new Set(opts)];
+    while(opts.length < 4) {
+        let fake = res + Math.floor(Math.random() * 20) - 10;
+        if(fake !== res && !opts.includes(fake.toString())) opts.push(fake.toString());
+    }
+    
     opts.sort(() => Math.random() - 0.5); // Xáo trộn option
     let corrIdx = opts.indexOf(res.toString());
 
@@ -81,7 +87,15 @@ for (let i = 0; i < 35; i++) {
     let a = Math.floor(Math.random() * 50) + 10;
     let b = Math.floor(Math.random() * 9) + 2;
     let res = a % b;
-    let opts = [res.toString(), (res+1).toString(), (res+2).toString(), Math.floor(a/b).toString()];
+    let ans4 = Math.floor(a/b);
+    let opts = [res.toString(), (res+1).toString(), (res+2).toString(), ans4.toString()];
+    
+    opts = [...new Set(opts)];
+    while(opts.length < 4) {
+        let fake = Math.floor(Math.random() * b);
+        if(!opts.includes(fake.toString())) opts.push(fake.toString());
+    }
+
     opts.sort(() => Math.random() - 0.5);
     let corrIdx = opts.indexOf(res.toString());
 
@@ -101,6 +115,11 @@ for (let i = 0; i < 40; i++) {
     let loops = limit - start;
     
     let opts = [loops.toString(), (loops+1).toString(), (loops-1).toString(), limit.toString()];
+    opts = [...new Set(opts)];
+    while(opts.length < 4) {
+        let fake = loops + Math.floor(Math.random() * 5) - 2;
+        if(fake >= 0 && !opts.includes(fake.toString())) opts.push(fake.toString());
+    }
     opts.sort(() => Math.random() - 0.5);
     let corrIdx = opts.indexOf(loops.toString());
 
@@ -130,7 +149,135 @@ for (let i = 0; i < 35; i++) {
     });
 }
 
-// Bổ sung các câu khai báo biến sinh ngẫu nhiên để chạm mốc đúng 200 câu
+// Sinh 30 câu hỏi về Toán tử kết hợp (Compound Assignment)
+for (let i = 0; i < 30; i++) {
+    let initialValue = Math.floor(Math.random() * 20) + 5;
+    let addValue = Math.floor(Math.random() * 15) + 1;
+    let ops = ['+=', '-='];
+    let op = ops[Math.floor(Math.random() * ops.length)];
+    let res = op === '+=' ? initialValue + addValue : initialValue - addValue;
+
+    let opts = [res.toString(), (res + 2).toString(), (res - 2).toString(), (res * 2).toString()];
+    opts = [...new Set(opts)];
+    while(opts.length < 4) {
+        let fake = Math.floor(Math.random() * 50);
+        if(!opts.includes(fake.toString())) opts.push(fake.toString());
+    }
+    opts.sort(() => Math.random() - 0.5);
+    let corrIdx = opts.indexOf(res.toString());
+
+    questionData.push({
+        monster: getRandomMonster(),
+        question: `Giá trị cuối cùng của biến x là bao nhiêu?<br/><code class="text-yellow-300 bg-gray-900 px-6 py-4 rounded inline-block mt-4 text-sm text-left font-mono">int x = ${initialValue};<br/>x ${op} ${addValue};<br/>cout << x;</code>`,
+        options: opts,
+        correct: corrIdx,
+        explanation: `Phép toán ${op} là viết tắt. <br><code>x ${op} ${addValue}</code> tương đương với <code>x = x ${op[0]} ${addValue}</code>. Kết quả là ${res}.`
+    });
+}
+
+// Sinh 20 câu hỏi về Toán tử Logic phủ định (NOT)
+for (let i = 0; i < 20; i++) {
+    let boolVal = Math.random() > 0.5 ? "true" : "false";
+    let isCorrectTrue = boolVal === "false"; // !false => true
+
+    questionData.push({
+        monster: getRandomMonster(),
+        question: `Kết quả in ra màn hình sẽ là (1: True, 0: False)?<br/><code class="text-yellow-300 bg-gray-900 px-6 py-4 rounded inline-block mt-4 text-sm text-left font-mono">bool c = ${boolVal};<br/>cout << !c;</code>`,
+        options: ["1", "0", "true", "false"],
+        correct: isCorrectTrue ? 0 : 1,
+        explanation: `Toán tử <code>!</code> (NOT) đảo ngược giá trị logic. Phủ định của ${boolVal} là ${isCorrectTrue ? "true (in ra 1)" : "false (in ra 0)"}.`
+    });
+}
+
+// Sinh 20 câu hỏi về Chuỗi (String) và chiều dài chuỗi
+const words = ["Magic", "Code", "Wizard", "Dragon", "Sword", "Shield", "Spell", "Potion", "Knight", "Castle"];
+for (let i = 0; i < 20; i++) {
+    let word = words[Math.floor(Math.random() * words.length)];
+    let len = word.length;
+    let funcType = Math.random() > 0.5 ? "length()" : "size()";
+    let opts = [len.toString(), (len+1).toString(), (len-1).toString(), "0"];
+    opts = [...new Set(opts)];
+    while(opts.length < 4) {
+        let fake = len + Math.floor(Math.random() * 5) - 2;
+        if(fake >= 0 && !opts.includes(fake.toString())) opts.push(fake.toString());
+    }
+    opts.sort(() => Math.random() - 0.5);
+    let corrIdx = opts.indexOf(len.toString());
+
+    questionData.push({
+        monster: getRandomMonster(),
+        question: `Có bao nhiêu ký tự được đếm trong đoạn code này?<br/><code class="text-yellow-300 bg-gray-900 px-6 py-4 rounded inline-block mt-4 text-sm text-left font-mono">string s = "${word}";<br/>cout << s.${funcType};</code>`,
+        options: opts,
+        correct: corrIdx,
+        explanation: `Hàm ${funcType} trả về tổng số lượng ký tự có trong chuỗi. Chữ "${word}" có đúng ${len} ký tự.`
+    });
+}
+
+// ==========================================
+// CÁC CÂU HỎI NHẬP CODE (TYPING QUESTIONS)
+// ==========================================
+let typingBase = [
+    {
+        q: "Lệnh nào dùng để IN dữ liệu ra màn hình?",
+        e: ["cout", "std::cout"],
+        exp: "<b>cout</b> là lệnh chuẩn để in ra màn hình trong C++."
+    },
+    {
+        q: "Lệnh nào dùng để NHẬP dữ liệu từ bàn phím?",
+        e: ["cin", "std::cin"],
+        exp: "<b>cin</b> là lệnh chuẩn để nhập dữ liệu trong C++."
+    },
+    {
+        q: "Từ khóa gì dùng để kết thúc hàm và trả về một giá trị?",
+        e: ["return"],
+        exp: "<b>return</b> được dùng để trả kết quả về sau khi hàm chạy xong."
+    },
+    {
+        q: "Từ khóa dùng để khai báo biến SỐ NGUYÊN là gì?",
+        e: ["int"],
+        exp: "Kiểu <b>int</b> (integer) đại diện cho các số nguyên."
+    },
+    {
+        q: "Từ khóa dùng để khai báo VĂN BẢN (Chuỗi) là gì?",
+        e: ["string", "std::string"],
+        exp: "Kiểu <b>string</b> dùng để lưu trữ các chuỗi chữ, ký tự."
+    },
+    {
+        q: "Ký hiệu nào đại diện cho phép tính CHIA LẤY DƯ?",
+        e: ["%"],
+        exp: "Dấu <b>%</b> dùng để thực hiện phép chia lấy phần dư."
+    },
+    {
+        q: "Ký tự nào bắt buộc dùng để KẾT THÚC một câu lệnh C++?",
+        e: [";"],
+        exp: "Mọi câu lệnh đơn lẻ trong C++ đều phải kết thúc bằng <b>dấu chấm phẩy (;)</b>."
+    }
+];
+
+typingBase.forEach(item => {
+    questionData.push({
+        type: 'typing',
+        monster: getRandomMonster(),
+        question: `Hãy gõ đáp án đúng bằng bàn phím:<br/><span class="block mt-4 text-purple-300 font-bold text-lg">${item.q}</span>`,
+        expected: item.e,
+        explanation: item.exp
+    });
+});
+
+// Sinh ngẫu nhiên câu hỏi gõ logic (15 câu)
+for (let i = 0; i < 15; i++) {
+    let num1 = Math.floor(Math.random() * 20) + 1;
+    let num2 = Math.floor(Math.random() * 20) + 1;
+    questionData.push({
+        type: 'typing',
+        monster: getRandomMonster(),
+        question: `Gõ số để hoàn thành phép tính đúng:<br/><code class="text-yellow-300 bg-gray-900 px-6 py-4 rounded inline-block mt-4 text-xl font-mono">${num1} + ___ = ${num1+num2}</code>`,
+        expected: [num2.toString()],
+        explanation: `${num1} + ${num2} = ${num1+num2}`
+    });
+}
+
+// Bổ sung các câu khai báo biến sinh ngẫu nhiên để chạm mốc tổng số câu (tăng thêm if needed)
 let currentLen = questionData.length;
 for (let i = 0; i < (200 - currentLen); i++) {
     let varName = "bien_" + Math.floor(Math.random() * 100);

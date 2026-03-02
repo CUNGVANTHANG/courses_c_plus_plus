@@ -278,7 +278,10 @@
         <div class="text-center max-w-lg p-6">
             <div class="text-8xl mb-4 grayscale">🧙‍♂️</div>
             <h2 class="text-5xl font-black text-red-500 mb-4">GỤC NGÃ!</h2>
-            <p class="text-xl text-gray-300 mb-8">Bạn đã hết sinh lực. Bọn quái vật Bug đã chiếm lấy Vương quốc Code.</p>
+            <p class="text-xl text-gray-300 mb-4">Bạn đã hết sinh lực. Bọn quái vật Bug đã chiếm lấy Vương quốc Code.</p>
+            <p class="text-2xl text-red-400 font-bold mb-8">
+                Hình phạt thất bại: Bị cướp mất <span id="game-over-penalty">0</span> <i class="fa-solid fa-coins"></i>
+            </p>
             <button onclick="location.reload()" class="bg-white text-black font-black py-3 px-8 rounded-full text-xl hover:bg-gray-200 transition">
                 Chơi lại từ đầu
             </button>
@@ -418,21 +421,71 @@
             questionText.innerHTML = data.question;
 
             optionsContainer.innerHTML = '';
-            data.options.forEach((opt, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'answer-btn w-full text-left p-4 rounded-xl text-lg font-bold text-gray-200 flex items-center gap-4 group';
-                
-                const letter = String.fromCharCode(65 + index);
-                btn.innerHTML = `
-                    <div class="w-8 h-8 rounded-full bg-purple-600/50 text-purple-200 flex items-center justify-center font-black group-hover:bg-purple-500 transition border border-purple-400/50">
-                        ${letter}
+            
+            if (data.type === 'typing') {
+                optionsContainer.innerHTML = `
+                    <div class="col-span-1 md:col-span-2 flex flex-col md:flex-row gap-4 mt-2">
+                        <input type="text" id="typing-input" class="flex-1 bg-black/60 border-2 border-purple-500 rounded-xl px-4 py-4 text-xl font-mono text-yellow-300 focus:outline-none focus:border-yellow-400 focus:shadow-[0_0_15px_rgba(234,179,8,0.3)] transition" placeholder="Nhập code vào đây rồi Enter..." autocomplete="off" spellcheck="false" autofocus>
+                        <button onclick="submitTyping()" id="typing-submit" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-4 px-8 rounded-xl transition shadow-[0_0_15px_rgba(168,85,247,0.4)] text-xl w-full md:w-auto shrink-0">Tung Chiêu!</button>
                     </div>
-                    <div class="flex-1 font-mono tracking-wide text-yellow-100">${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
                 `;
-                
-                btn.onclick = () => checkAnswer(index, btn);
-                optionsContainer.appendChild(btn);
-            });
+                const inputEl = document.getElementById('typing-input');
+                inputEl.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') submitTyping();
+                });
+                setTimeout(() => inputEl.focus(), 100);
+            } else {
+                data.options.forEach((opt, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'answer-btn w-full text-left p-4 rounded-xl text-lg font-bold text-gray-200 flex items-center gap-4 group';
+                    
+                    const letter = String.fromCharCode(65 + index);
+                    btn.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-purple-600/50 text-purple-200 flex items-center justify-center font-black group-hover:bg-purple-500 transition border border-purple-400/50">
+                            ${letter}
+                        </div>
+                        <div class="flex-1 font-mono tracking-wide text-yellow-100">${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                    `;
+                    
+                    btn.onclick = () => checkAnswer(index, btn);
+                    optionsContainer.appendChild(btn);
+                });
+            }
+        }
+
+        function submitTyping() {
+            if (isAnimating) return;
+            const inputEl = document.getElementById('typing-input');
+            const btnElement = document.getElementById('typing-submit');
+            let val = inputEl.value.trim();
+            if (val === '') return;
+
+            isAnimating = true;
+            inputEl.disabled = true;
+
+            const data = activeQuestions[currentLevel];
+            let isCorrect = false;
+
+            const cleanVal = val.replace(/\s+/g, '').replace(/;/g, ''); 
+            for (let ans of data.expected) {
+                const cleanAns = ans.replace(/\s+/g, '').replace(/;/g, '');
+                if (cleanVal === cleanAns) {
+                    isCorrect = true;
+                    break;
+                }
+            }
+
+            if (isCorrect) {
+                btnElement.classList.add('answer-correct');
+                inputEl.classList.replace('border-purple-500', 'border-green-500');
+                inputEl.classList.replace('text-yellow-300', 'text-green-400');
+                executeCorrectAnim(btnElement);
+            } else {
+                btnElement.classList.add('answer-wrong');
+                inputEl.classList.replace('border-purple-500', 'border-red-500');
+                inputEl.classList.replace('text-yellow-300', 'text-red-400');
+                executeWrongAnim(btnElement, data.explanation);
+            }
         }
 
         function checkAnswer(selectedIndex, btnElement) {
@@ -446,69 +499,75 @@
 
             if (isCorrect) {
                 btnElement.classList.add('answer-correct');
-                playerChar.classList.add('anim-attack-player');
-                
-                setTimeout(() => {
-                    spellParticle.style.opacity = '1';
-                    spellParticle.style.transform = 'translate(400px, -50px) scale(2.5) rotate(360deg)';
-                }, 100);
-
-                setTimeout(() => {
-                    spellParticle.style.opacity = '0'; 
-                    spellParticle.style.transform = 'translate(0, 0) scale(1) rotate(0deg)'; 
-                    
-                    monsterChar.classList.add('anim-hurt');
-                    monsterHpBar.style.width = '0%'; 
-                    
-                    let baseGold = 50;
-                    if (stats.hasDoubleGold) baseGold *= 2;
-                    stats.gold += baseGold;
-                    updateGoldUI();
-
-                    showFloatingText(`+${baseGold}`, monsterChar);
-                }, 400);
-
-                setTimeout(() => {
-                    playerChar.classList.remove('anim-attack-player');
-                    monsterChar.classList.remove('anim-hurt');
-                    currentLevel++;
-                    loadQuestion();
-                }, 1200);
-
+                executeCorrectAnim(btnElement);
             } else {
                 btnElement.classList.add('answer-wrong');
                 const correctBtn = optionsContainer.children[data.correct];
                 correctBtn.classList.add('answer-correct');
-
-                monsterChar.classList.add('anim-attack-monster');
-
-                setTimeout(() => {
-                    if (stats.hasShield) {
-                        stats.hasShield = false;
-                        saveStats();
-                        renderHpUI();
-                        showFloatingText("🛡️ Đỡ đòn!", playerChar, "text-blue-400");
-                    } else {
-                        playerChar.classList.add('anim-hurt');
-                        playerBP--;
-                        renderHpUI();
-                        showFloatingText("-1 HP", playerChar, "text-red-500");
-                        
-                        if (playerBP <= 0) {
-                            setTimeout(showGameOver, 800);
-                            return; 
-                        }
-                    }
-                }, 300);
-
-                setTimeout(() => {
-                    playerChar.classList.remove('anim-hurt');
-                    monsterChar.classList.remove('anim-attack-monster');
-                    if (playerBP > 0) {
-                        showFeedback(data.explanation); 
-                    }
-                }, 1200);
+                executeWrongAnim(btnElement, data.explanation);
             }
+        }
+
+        function executeCorrectAnim(btnElement) {
+            playerChar.classList.add('anim-attack-player');
+            
+            setTimeout(() => {
+                spellParticle.style.opacity = '1';
+                spellParticle.style.transform = 'translate(400px, -50px) scale(2.5) rotate(360deg)';
+            }, 100);
+
+            setTimeout(() => {
+                spellParticle.style.opacity = '0'; 
+                spellParticle.style.transform = 'translate(0, 0) scale(1) rotate(0deg)'; 
+                
+                monsterChar.classList.add('anim-hurt');
+                monsterHpBar.style.width = '0%'; 
+                
+                let baseGold = 50;
+                if (stats.hasDoubleGold) baseGold *= 2;
+                stats.gold += baseGold;
+                updateGoldUI();
+
+                showFloatingText(`+${baseGold}`, monsterChar);
+            }, 400);
+
+            setTimeout(() => {
+                playerChar.classList.remove('anim-attack-player');
+                monsterChar.classList.remove('anim-hurt');
+                currentLevel++;
+                loadQuestion();
+            }, 1200);
+        }
+
+        function executeWrongAnim(btnElement, explanation) {
+            monsterChar.classList.add('anim-attack-monster');
+
+            setTimeout(() => {
+                if (stats.hasShield) {
+                    stats.hasShield = false;
+                    saveStats();
+                    renderHpUI();
+                    showFloatingText("🛡️ Đỡ đòn!", playerChar, "text-blue-400");
+                } else {
+                    playerChar.classList.add('anim-hurt');
+                    playerBP--;
+                    renderHpUI();
+                    showFloatingText("-1 HP", playerChar, "text-red-500");
+                    
+                    if (playerBP <= 0) {
+                        setTimeout(showGameOver, 800);
+                        return; 
+                    }
+                }
+            }, 300);
+
+            setTimeout(() => {
+                playerChar.classList.remove('anim-hurt');
+                monsterChar.classList.remove('anim-attack-monster');
+                if (playerBP > 0) {
+                    showFeedback(explanation); 
+                }
+            }, 1200);
         }
 
         // --- SHOP & UI LOGIC ---
@@ -596,6 +655,17 @@
         }
 
         function showGameOver() {
+            // Phạt tiền dựa trên số ải (ví dụ: mỗi ải trừ 10 vàng, cộng thêm 20 vàng gốc)
+            let penalty = (currentLevel * 10) + 20;
+            // Không trừ âm tiền
+            if (penalty > stats.gold) {
+                penalty = stats.gold;
+            }
+            
+            stats.gold -= penalty;
+            updateGoldUI();
+            
+            document.getElementById('game-over-penalty').innerText = penalty;
             gameOverModal.classList.remove('hidden');
         }
 
