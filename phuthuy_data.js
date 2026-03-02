@@ -214,65 +214,60 @@ for (let i = 0; i < 20; i++) {
 }
 
 // ==========================================
-// CÁC CÂU HỎI NHẬP CODE (TYPING QUESTIONS)
+// CÁC CÂU HỎI ĐIỀN CODE (FILL IN THE BLANKS)
 // ==========================================
 let typingBase = [
     {
         q: "Lệnh nào dùng để IN dữ liệu ra màn hình?",
-        e: ["cout", "std::cout"],
+        e: [["cout", "std::cout"]],
+        html: `<code class="text-yellow-300 bg-gray-900 px-6 py-4 rounded inline-block mt-4 text-xl font-mono text-left"><input type="text" class="phuthuy-input w-24 bg-black/50 border-b-2 border-purple-500 text-center focus:outline-none focus:border-yellow-400 text-yellow-300" autocomplete="off" spellcheck="false" autofocus> &lt;&lt; "Xin chao!";</code>`,
         exp: "<b>cout</b> là lệnh chuẩn để in ra màn hình trong C++."
     },
     {
         q: "Lệnh nào dùng để NHẬP dữ liệu từ bàn phím?",
-        e: ["cin", "std::cin"],
+        e: [["cin", "std::cin"]],
+        html: `<code class="text-yellow-300 bg-gray-900 px-6 py-4 rounded inline-block mt-4 text-xl font-mono text-left"><input type="text" class="phuthuy-input w-24 bg-black/50 border-b-2 border-purple-500 text-center focus:outline-none focus:border-yellow-400 text-yellow-300" autocomplete="off" spellcheck="false" autofocus> &gt;&gt; bienSo;</code>`,
         exp: "<b>cin</b> là lệnh chuẩn để nhập dữ liệu trong C++."
     },
     {
         q: "Từ khóa gì dùng để kết thúc hàm và trả về một giá trị?",
-        e: ["return"],
+        e: [["return"]],
+        html: `<code class="text-yellow-300 bg-gray-900 px-6 py-4 rounded inline-block mt-4 text-xl font-mono text-left"><span class="text-blue-400">int</span> tinhTong() {<br>&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" class="phuthuy-input w-24 bg-black/50 border-b-2 border-purple-500 text-center focus:outline-none focus:border-yellow-400 text-yellow-300" autocomplete="off" spellcheck="false" autofocus> 100;<br>}</code>`,
         exp: "<b>return</b> được dùng để trả kết quả về sau khi hàm chạy xong."
     },
     {
         q: "Từ khóa dùng để khai báo biến SỐ NGUYÊN là gì?",
-        e: ["int"],
+        e: [["int"]],
+        html: `<code class="text-yellow-300 bg-gray-900 px-6 py-4 rounded inline-block mt-4 text-xl font-mono text-left"><input type="text" class="phuthuy-input w-16 bg-black/50 border-b-2 border-purple-500 text-center focus:outline-none focus:border-yellow-400 text-yellow-300" autocomplete="off" spellcheck="false" autofocus> soTuoi = 15;</code>`,
         exp: "Kiểu <b>int</b> (integer) đại diện cho các số nguyên."
     },
     {
-        q: "Từ khóa dùng để khai báo VĂN BẢN (Chuỗi) là gì?",
-        e: ["string", "std::string"],
-        exp: "Kiểu <b>string</b> dùng để lưu trữ các chuỗi chữ, ký tự."
-    },
-    {
-        q: "Ký hiệu nào đại diện cho phép tính CHIA LẤY DƯ?",
-        e: ["%"],
-        exp: "Dấu <b>%</b> dùng để thực hiện phép chia lấy phần dư."
-    },
-    {
         q: "Ký tự nào bắt buộc dùng để KẾT THÚC một câu lệnh C++?",
-        e: [";"],
+        e: [[";"]],
+        html: `<code class="text-yellow-300 bg-gray-900 px-6 py-4 rounded inline-block mt-4 text-xl font-mono text-left">cout &lt;&lt; "Code la ma thuat"<input type="text" class="phuthuy-input w-8 bg-black/50 border-b-2 border-purple-500 text-center focus:outline-none focus:border-yellow-400 text-yellow-300" autocomplete="off" spellcheck="false" autofocus></code>`,
         exp: "Mọi câu lệnh đơn lẻ trong C++ đều phải kết thúc bằng <b>dấu chấm phẩy (;)</b>."
     }
 ];
 
 typingBase.forEach(item => {
     questionData.push({
-        type: 'typing',
+        type: 'fill_code',
         monster: getRandomMonster(),
-        question: `Hãy gõ đáp án đúng bằng bàn phím:<br/><span class="block mt-4 text-purple-300 font-bold text-lg">${item.q}</span>`,
+        question: `Điền vào lỗ hổng bằng bàn phím để xuất chiêu:<br/><span class="block mt-4 text-purple-300 font-bold text-lg">${item.q}</span><br>${item.html}`,
         expected: item.e,
         explanation: item.exp
     });
 });
 
-// Sinh ngẫu nhiên câu hỏi gõ logic (15 câu)
+// Sinh ngẫu nhiên câu hỏi gõ logic
 for (let i = 0; i < 15; i++) {
     let num1 = Math.floor(Math.random() * 20) + 1;
     let num2 = Math.floor(Math.random() * 20) + 1;
     questionData.push({
-        type: 'typing',
+        type: 'fill_code',
         monster: getRandomMonster(),
-        question: `Gõ số để hoàn thành phép tính đúng:<br/><code class="text-yellow-300 bg-gray-900 px-6 py-4 rounded inline-block mt-4 text-xl font-mono">${num1} + ___ = ${num1+num2}</code>`,
-        expected: [num2.toString()],
+        question: `Gõ số để hoàn thành phép tính đúng:<br/><code class="text-yellow-300 bg-gray-900 px-6 py-4 rounded inline-block mt-4 text-xl font-mono text-left">int tong = ${num1} + <input type="text" class="phuthuy-input w-16 bg-black/50 border-b-2 border-purple-500 text-center focus:outline-none focus:border-yellow-400 text-yellow-300 px-1" autocomplete="off" spellcheck="false">;<br><span class="text-gray-500 text-sm mt-3 inline-block">// Yêu cầu 'tong' phải bằng ${num1+num2}</span></code>`,
+        expected: [[num2.toString()]],
         explanation: `${num1} + ${num2} = ${num1+num2}`
     });
 }
