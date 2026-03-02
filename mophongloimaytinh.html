@@ -86,6 +86,40 @@
             100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
         }
         .cpu-active { animation: pulse 1s infinite; border-color: #a855f7 !important; }
+
+        /* Custom Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: -100%;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-left: 6px solid #10b981;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            z-index: 100;
+            transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 400px;
+        }
+        .toast.show {
+            right: 20px;
+        }
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        .toast-icon {
+            font-size: 24px;
+        }
+        .toast.error .toast-icon {
+            color: #ef4444;
+        }
+        .toast:not(.error) .toast-icon {
+            color: #10b981;
+        }
     </style>
 </head>
 <body class="flex flex-col h-screen">
@@ -182,6 +216,9 @@
 
     <!-- Overlay Animation -->
     <div id="animation-layer" class="fixed inset-0 pointer-events-none z-50"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
 
     <!-- Victory Modal -->
     <div id="victory-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur z-50 flex items-center justify-center hidden">
@@ -452,6 +489,198 @@
                 options: ["Khó hơn.", "Dễ chịu hơn! Chỉ cần ÍT NHẤT 1 VẾ ĐÚNG là được cho qua.", "Giống nhau."],
                 correct: 1, action: "LOGIC_OP", varName1: "tien", val1: "0", varName2: "theVip", val2: "1", operator: "||",
                 explanation: "Tuyệt vời! || như vé dự phòng, không có tiền nhưng có thẻ VIP thì vẫn được vào!"
+            },
+            
+            // --- NHÓM 8: THỬ THÁCH NÂNG CAO ---
+            {
+                topic: "Đảo Ngược Logic (!)",
+                code: `<span class="text-purple-400">if</span> (<span class="text-sky-400">!</span>(<span class="text-yellow-200">a</span> <span class="text-sky-400">&gt;</span> <span class="text-emerald-400">5</span>))`,
+                question: "Biết a = 10. Điều kiện (a > 5) là ĐÚNG. Vậy !(a > 5) là gì?",
+                options: ["Vẫn là Đúng.", "Thành SAI (False).", "Báo lỗi cú pháp."],
+                correct: 1, action: "COMPARE", varName: "a", val: "10", checkVal: "5", operator: ">", result: false,
+                explanation: "Xuất sắc! Dấu ! (NOT) sẽ lật ngược vấn đề. Đúng thành Sai, Sai thành Đúng."
+            },
+            {
+                topic: "Thứ Tự Ưu Tiên Toán Học",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">kq</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">2</span> <span class="text-sky-400">+</span> <span class="text-emerald-400">3</span> <span class="text-sky-400">*</span> <span class="text-emerald-400">4</span>;`,
+                question: "RAM sẽ lưu số mấy vào hộp 'kq'?",
+                options: ["20 (Vì 2+3=5, rồi 5*4=20)", "14 (Vì 3*4=12, rồi 2+12=14)", "10"],
+                correct: 1, action: "MATH_OP", varName: "kq", oldVal: "0", operator: "=", num: "2+3*4", newVal: "14",
+                explanation: "Chuẩn! Nhân chia trước, cộng trừ sau. Máy tính tuân thủ tuyệt đối quy tắc này."
+            },
+            {
+                topic: "Chia Lấy Nguyên (Integer Division)",
+                code: `<span class="text-blue-400">float</span> <span class="text-yellow-200">kq</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">5</span> <span class="text-sky-400">/</span> <span class="text-emerald-400">2</span>;`,
+                question: "Cẩn thận! 5 và 2 đều là số nguyên. Vậy 5/2 bằng mấy?",
+                options: ["2.5", "2", "3"],
+                correct: 1, action: "ASSIGN_VAL", varName: "kq", val: "2",
+                explanation: "Chính xác! Trong C++, Số Nguyên chia Số Nguyên sẽ LUÔN RA Số Nguyên (bỏ phần thập phân đi). Muốn ra 2.5 phải viết 5.0 / 2."
+            },
+            {
+                topic: "Khai Báo Nhiều Biến",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">x</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">1</span>, <span class="text-yellow-200">y</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">2</span>;`,
+                question: "Lệnh này làm gì?",
+                options: ["Báo lỗi vì chỉ được khai báo từng dòng.", "Tạo 2 biến x và y cùng lúc.", "Chỉ tạo biến y."],
+                correct: 1, action: "CREATE_VAR", varName: "x, y", val: "1, 2",
+                explanation: "Đúng! Dấu phẩy (,) cho phép khai báo một dây chuyền các biến cùng kiểu dữ liệu."
+            },
+            {
+                topic: "Hằng Số (Constant)",
+                code: `<span class="text-purple-400">const</span> <span class="text-blue-400">int</span> <span class="text-yellow-200">MAX</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">100</span>;\n<span class="text-yellow-200">MAX</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">200</span>;`,
+                question: "Chuyện gì xảy ra khi cố tình thay đổi giá trị biến const?",
+                options: ["RAM thay số 100 thành 200.", "Trình biên dịch BÁO LỖI ngay lập tức!", "Không làm gì cả."],
+                correct: 1, action: "ASSIGN_VAL", varName: "MAX", val: "ERR",
+                explanation: "Tuyệt vời! const (constant) nghĩa là 'Bất biến'. Đã đặt là 100 thì mãi mãi là 100."
+            },
+            {
+                topic: "Chuyển Đổi Kiểu (Casting)",
+                code: `<span class="text-blue-400">double</span> <span class="text-yellow-200">pi</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">3.14</span>;\n<span class="text-blue-400">int</span> <span class="text-yellow-200">so</span> <span class="text-sky-400">=</span> (<span class="text-blue-400">int</span>)<span class="text-yellow-200">pi</span>;`,
+                question: "Khi ép biến pi (3.14) thành kiểu int, hộp 'so' sẽ chứa gì?",
+                options: ["3", "3.14", "4 (Làm tròn)"],
+                correct: 0, action: "ASSIGN_VAL", varName: "so", val: "3",
+                explanation: "Đúng! Ép sang int sẽ chặt bỏ hoàn toàn phần đuôi thập phân, không làm tròn."
+            },
+            {
+                topic: "Vòng Lặp (Concept)",
+                code: `<span class="text-purple-400">while</span> (<span class="text-yellow-200">pin</span> <span class="text-sky-400">&lt;</span> <span class="text-emerald-400">100</span>) {\n  <span class="text-yellow-200">pin</span><span class="text-sky-400">++</span>;\n}`,
+                question: "Lệnh 'while' sẽ yêu cầu CPU làm gì?",
+                options: ["Chạy lệnh pin++ đúng 1 lần.", "Lặp đi lặp lại việc sạc pin (tăng pin) MIỄN LÀ pin còn dưới 100.", "Không làm gì."],
+                correct: 1, action: "MATH_OP", varName: "pin++", oldVal: "...", operator: "loop", newVal: "100",
+                explanation: "Chính xác! 'while' là vòng lặp. Nó bắt CPU làm việc quần quật cho đến khi điều kiện sai mới thôi."
+            },
+            {
+                topic: "Vòng Lặp Check (Do-While)",
+                code: `<span class="text-purple-400">do</span> {\n  <span class="text-blue-400">cin</span> <span class="text-sky-400">&gt;&gt;</span> <span class="text-yellow-200">mk</span>;\n} <span class="text-purple-400">while</span> (<span class="text-yellow-200">mk</span> <span class="text-sky-400">!=</span> <span class="text-emerald-400">123</span>);`,
+                question: "Đoạn code này dùng để làm gì?",
+                options: ["Nhập mật khẩu 1 lần.", "Bắt người dùng nhập lại mật khẩu HOÀI cho đến khi đúng là 123 mới tha.", "In mật khẩu ra."],
+                correct: 1, action: "CIN_VAR", varName: "mk", inputVal: "123",
+                explanation: "Chuẩn! Đây là cách các ứng dụng bắt bạn nhập đúng mật khẩu mới cho Login."
+            },
+            
+            // --- NHÓM 9: CẤU TRÚC DỮ LIỆU & HÀM NÂNG CAO ---
+            {
+                topic: "Switch Case (Rẽ nhánh)", 
+                code: `<span class="text-purple-400">switch</span> (<span class="text-yellow-200">phim</span>) {\n  <span class="text-purple-400">case</span> <span class="text-emerald-400">1</span>: <span class="text-blue-400">cout</span> &lt;&lt; <span class="text-orange-300">"Start"</span>;\n  <span class="text-purple-400">break</span>;\n}`,
+                question: "Lệnh 'switch' hoạt động giống như cái gì?",
+                options: ["Cái công tắc điện.", "Bảng điều khiển nhiều nút bấm. Bấm nút nào (case) thì chức năng đó chạy.", "Vòng lặp vô tận."],
+                correct: 1, action: "COMPARE", varName: "phim", val: "1", checkVal: "1", operator: "==", result: true,
+                explanation: "Đúng! Switch cực tiện lợi khi bạn muốn xử lý menu game (Ví dụ: 1.Chơi, 2.Cài đặt, 3.Thoát)."
+            },
+            {
+                topic: "Nối Chuỗi (String Concatenation)",
+                code: `<span class="text-blue-400">string</span> <span class="text-yellow-200">ho</span> = <span class="text-orange-300">"Nguyen"</span>;\n<span class="text-blue-400">string</span> <span class="text-yellow-200">ten</span> = <span class="text-orange-300">"An"</span>;\n<span class="text-blue-400">cout</span> &lt;&lt; <span class="text-yellow-200">ho</span> + <span class="text-yellow-200">ten</span>;`,
+                question: "Dấu cộng (+) giữa 2 chuỗi có làm phép toán cộng không?",
+                options: ["Có, nó cộng mã số của từng chữ cái.", "Không, nó dán dính 2 chuỗi lại thành một.", "Báo lỗi."],
+                correct: 1, action: "COUT_TEXT", text: "NguyenAn",
+                explanation: "Chuẩn! Với chuỗi, dấu + là 'Keo dán sắt', dính liền chúng lại với nhau (Concatenation)."
+            },
+            {
+                topic: "Thay đổi Mảng",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">a</span>[<span class="text-emerald-400">3</span>] = {<span class="text-emerald-400">1</span>, <span class="text-emerald-400">2</span>, <span class="text-emerald-400">3</span>};\n<span class="text-yellow-200">a</span>[<span class="text-emerald-400">0</span>] = <span class="text-emerald-400">9</span>;`,
+                question: "Sau lệnh a[0] = 9; mảng sẽ trở thành thế nào?",
+                options: ["{9, 2, 3}", "{1, 9, 3}", "{1, 2, 9}"],
+                correct: 0, action: "ASSIGN_VAL", varName: "a[0]", val: "9",
+                explanation: "Chính xác! a[0] là phần tử ĐẦU TIÊN. Ta vừa ghi đè số 9 vào vị trí đó."
+            },
+            {
+                topic: "Ký Tự vs Chuỗi",
+                code: `<span class="text-blue-400">char</span> <span class="text-yellow-200">x</span> = <span class="text-orange-300">'A'</span>;\n<span class="text-blue-400">string</span> <span class="text-yellow-200">y</span> = <span class="text-orange-300">"A"</span>;`,
+                question: "Sự khác biệt giữa 'A' và \"A\" là gì?",
+                options: ["Không khác gì nhau.", "'A' là char (chiếm ít RAM), \"A\" là string (chiếm nhiều RAM hơn).", "Viết sao cũng được."],
+                correct: 1, action: "CREATE_VAR", varName: "x, y", val: "'A', \"A\"", 
+                explanation: "Rất tinh ý! Dấu nháy đơn '' dành cho char (1 ký tự), dấu nháy kép \"\" dành cho string."
+            },
+            {
+                topic: "Tham Số Hàm (Function Parameters)",
+                code: `<span class="text-blue-400">void</span> <span class="text-yellow-200">tangQua</span>(<span class="text-blue-400">int</span> <span class="text-yellow-200">soLuong</span>) { ... }\n<span class="text-yellow-200">tangQua</span>(<span class="text-emerald-400">5</span>);`,
+                question: "Khi gọi hàm tangQua(5), số 5 được gọi là gì?",
+                options: ["Biến toàn cục.", "Tham số truyền vào (Argument).", "Giá trị trả về."],
+                correct: 1, action: "ASSIGN_VAL", varName: "soLuong", val: "5",
+                explanation: "Đúng! Giống như bạn đưa nguyên liệu (số 5) vào máy xay sinh tố (hàm) để nó xử lý."
+            },
+            {
+                topic: "Tràn Số (Overflow)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">x</span> = <span class="text-emerald-400">2147483647</span>;\n<span class="text-yellow-200">x</span> = <span class="text-yellow-200">x</span> + <span class="text-emerald-400">1</span>;`,
+                question: "Đây là số lớn nhất mà kiểu int chứa được. Nếu cố cộng thêm 1 thì sao?",
+                options: ["Thành 2147483648.", "Máy tính nổ tung.", "Bị quay vòng về số ÂM cực lớn (Tràn số)."],
+                correct: 2, action: "ASSIGN_VAL", varName: "x", val: "-2147...", 
+                explanation: "Đáng sợ chưa! Giống như đồng hồ công tơ mét, khi chạy hết số nó sẽ quay về vạch xuất phát (số âm)."
+            },
+            {
+                topic: "Chú Thích (Comment)",
+                code: `<span class="text-slate-500">// Day la comment</span>\n<span class="text-slate-500">/* Day cung vay */</span>`,
+                question: "Trình biên dịch (Compiler) sẽ làm gì với những dòng chữ màu xám này?",
+                options: ["Dịch ra mã máy.", "Bỏ qua hoàn toàn, không chạy.", "In ra màn hình."],
+                correct: 1, action: "COUT_TEXT", text: "...", 
+                explanation: "Đúng! Comment chỉ để cho con người đọc thôi, máy tính sẽ lờ đi."
+            },
+            {
+                topic: "Bool (Đúng/Sai)",
+                code: `<span class="text-blue-400">bool</span> <span class="text-yellow-200">gameOver</span> = <span class="text-blue-400">false</span>;`,
+                question: "Kiểu dữ liệu 'bool' có thể chứa những giá trị nào?",
+                options: ["Bất kỳ số nào.", "Chỉ true (Đúng) hoặc false (Sai).", "Chuỗi văn bản."],
+                correct: 1, action: "CREATE_VAR", varName: "gameOver", val: "false",
+                explanation: "Chính xác! Bool (Boolean) chỉ có 2 mặt như đồng xu vậy."
+            },
+
+            // --- NHÓM 10: VÒNG LẶP & TOÁN HỌC (CMATH) ---
+            {
+                topic: "Vòng Lặp (For)",
+                code: `<span class="text-purple-400">for</span> (<span class="text-blue-400">int</span> <span class="text-yellow-200">i</span>=<span class="text-emerald-400">0</span>; <span class="text-yellow-200">i</span>&lt;<span class="text-emerald-400">3</span>; <span class="text-yellow-200">i</span><span class="text-sky-400">++</span>)`,
+                question: "Vòng lặp này sẽ chạy tổng cộng bao nhiêu lần?",
+                options: ["3 lần (i=0, 1, 2).", "4 lần (i=0, 1, 2, 3).", "Vô hạn lần."],
+                correct: 0, action: "CREATE_VAR", varName: "i", val: "0..2",
+                explanation: "Chính xác! i chạy từ 0, mỗi lần tăng 1, dừng lại khi i=3. Vậy nó chạy khi i=0, i=1, i=2. Tổng 3 lần."
+            },
+            {
+                topic: "Căn Bậc Hai (sqrt)",
+                code: `<span class="text-purple-400">#include</span> &lt;<span class="text-green-300">cmath</span>&gt;\n<span class="text-blue-400">double</span> <span class="text-yellow-200">x</span> = <span class="text-yellow-200">sqrt</span>(<span class="text-emerald-400">16</span>);`,
+                question: "Hàm sqrt(16) trong thư viện cmath sẽ trả về số mấy?",
+                options: ["8", "4", "256"],
+                correct: 1, action: "ASSIGN_VAL", varName: "x", val: "4",
+                explanation: "Đúng! Square Root (Căn bậc hai) của 16 là 4 (vì 4x4 = 16)."
+            },
+            {
+                topic: "Lũy Thừa (pow)",
+                code: `<span class="text-blue-400">double</span> <span class="text-yellow-200">y</span> = <span class="text-yellow-200">pow</span>(<span class="text-emerald-400">2</span>, <span class="text-emerald-400">3</span>);`,
+                question: "Hàm pow(2, 3) nghĩa là gì?",
+                options: ["2 nhân 3.", "2 cộng 3.", "2 mũ 3 (2 x 2 x 2)."],
+                correct: 2, action: "ASSIGN_VAL", varName: "y", val: "8",
+                explanation: "Tuyệt! Power (Lũy thừa) dùng để tính số mũ. 2 mũ 3 bằng 8."
+            },
+            {
+                topic: "Giá Trị Tuyệt Đối (abs)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">z</span> = <span class="text-yellow-200">abs</span>(<span class="text-emerald-400">-10</span>);`,
+                question: "Hàm abs cho ra kết quả gì?",
+                options: ["-10 (Giữ nguyên).", "10 (Làm dương số).", "0 (Về không)."],
+                correct: 1, action: "ASSIGN_VAL", varName: "z", val: "10",
+                explanation: "Chuẩn! Absolute Value sẽ biến mọi số âm thành số dương."
+            },
+
+             // --- NHÓM 11: SCOPE & REFERENCE ---
+            {
+                topic: "Biến Cục Bộ (Local Scope)",
+                code: `<span class="text-blue-400">void</span> <span class="text-yellow-200">test</span>() {\n  <span class="text-blue-400">int</span> <span class="text-yellow-200">temp</span> = <span class="text-emerald-400">5</span>;\n}\n<span class="text-blue-400">cout</span> &lt;&lt; <span class="text-yellow-200">temp</span>;`,
+                question: "Chuyện gì xảy ra khi cố in biến 'temp' ở bên ngoài hàm test()?",
+                options: ["In số 5.", "Lỗi: 'temp' chưa được khai báo.", "In số 0."],
+                correct: 1, action: "COUT_TEXT", text: "Lỗi!",
+                explanation: "Đúng! Biến 'temp' sinh ra trong hàm test() và sẽ CHẾT ngay khi hàm kết thúc. Bên ngoài không ai biết nó là ai."
+            },
+            {
+                topic: "Trả Về Giá Trị (Return)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">layDiem</span>() {\n  <span class="text-purple-400">return</span> <span class="text-emerald-400">100</span>;\n}\n<span class="text-blue-400">int</span> <span class="text-yellow-200">d</span> = <span class="text-yellow-200">layDiem</span>();`,
+                question: "Biến 'd' sẽ nhận giá trị gì?",
+                options: ["Không có gì.", "100.", "Tên hàm 'layDiem'."],
+                correct: 1, action: "ASSIGN_VAL", varName: "d", val: "100",
+                explanation: "Chính xác! Lệnh return giống như việc hàm ném một quả bóng (giá trị 100) ra ngoài cho người gọi bắt lấy."
+            },
+            {
+                topic: "Tham Chiếu (& Reference)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">goc</span> = <span class="text-emerald-400">10</span>;\n<span class="text-blue-400">int</span> &amp;<span class="text-yellow-200">ao</span> = <span class="text-yellow-200">goc</span>;\n<span class="text-yellow-200">ao</span> = <span class="text-emerald-400">20</span>;`,
+                question: "Biến 'ao' là cái BÓNG (Alias) của 'goc'. Khi sửa 'ao' thành 20, 'goc' sẽ là mấy?",
+                options: ["Vẫn là 10 (Không liên quan).", "Cũng thành 20 luôn.", "Báo lỗi."],
+                correct: 1, action: "ASSIGN_VAL", varName: "goc", val: "20",
+                explanation: "Rất thâm thúy! Dấu & tạo ra một cái tên giả cho cùng một ô nhớ. Đụng vào cái bóng thì cái thật cũng đau!"
             }
         ];
 
@@ -473,6 +702,39 @@
         
         // Utils
         const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // Icon
+            let iconData = type === 'success' 
+                ? '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />'
+                : '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />';
+            
+            let colorClass = type === 'success' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+
+            toast.className = `toast flex items-start gap-3 p-4 rounded-xl border backdrop-blur-md shadow-lg min-w-[300px] max-w-sm ${colorClass}`;
+            toast.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6 shrink-0 mt-0.5">
+                    ${iconData}
+                </svg>
+                <div class="text-sm font-medium leading-relaxed">${message}</div>
+            `;
+
+            container.appendChild(toast);
+
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+
+            // Auto remove
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, 4000);
+        }
 
         function initGame() {
             loadLevel();
@@ -538,15 +800,17 @@
                 await playAnimation(data);
                 await sleep(500);
                 
-                alert("HỆ THỐNG: " + data.explanation);
+                showToast("HỆ THỐNG: " + data.explanation, "success");
+                await sleep(2000); // Thêm thời gian đọc toast
                 currentLevel++;
                 if (currentLevel < levelData.length) loadLevel();
                 else document.getElementById("victory-modal").classList.remove("hidden");
             } else {
                 btn.classList.add('wrong');
                 btn.innerHTML += `<div class="ml-auto text-red-400"><i class="fa-solid fa-times-circle text-xl"></i></div>`;
-                setTimeout(() => {
-                    alert("CPU Báo Lỗi: Suy luận sai rồi! Hãy nghĩ lại xem dòng code làm gì nhé.");
+                setTimeout(async () => {
+                    showToast("CPU Báo Lỗi: Suy luận sai rồi! Hãy nghĩ lại xem dòng code làm gì nhé.", "error");
+                    await sleep(2500); // Chờ đọc lỗi
                     loadLevel();
                 }, 500);
             }
