@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ - C++ Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .link-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .link-card h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .link-card p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .link-card:nth-child(2) {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .link-card:nth-child(3) {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .link-card h2 {
+                font-size: 1.5em;
+            }
+
+            .link-card p {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 C++ Tutorial Projects</h1>
+        
+        <div class="links-container">
+            <a href="hocvienphihanhgia.html" class="link-card">
+                <h2>🌟 Học Viện Phi Hành Gia</h2>
+                <p>Khám phá thế giới phi hành gia và vũ trụ</p>
+            </a>
+
+            <a href="mophongloimaytinh.html" class="link-card">
+                <h2>💻 Mô Phỏng Lỗi Máy Tính</h2>
+                <p>Trải nghiệm các lỗi máy tính thú vị</p>
+            </a>
+
+            <a href="phuthuycode.html" class="link-card">
+                <h2>🧙‍♂️ Phù Thủy Code</h2>
+                <p>Ma thuật lập trình và những hiệu ứng kỳ diệu</p>
+            </a>
+        </div>
+
+        <footer>
+            <p>© 2026 C++ Tutorial Projects | Created for learning purposes</p>
+        </footer>
+    </div>
+</body>
+</html>

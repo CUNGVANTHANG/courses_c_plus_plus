@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trạm Mô Phỏng C++ - Hiểu rõ máy tính hoạt động</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .font-code { font-family: 'Space Mono', monospace; }
+
+        /* Lưới nền */
+        .grid-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: 
+                linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+        }
+
+        /* Ô nhớ RAM */
+        .ram-cell {
+            border: 2px dashed #3b82f6;
+            background-color: rgba(30, 58, 138, 0.3);
+            border-radius: 8px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .ram-cell.active {
+            border-style: solid;
+            border-color: #10b981;
+            background-color: rgba(6, 78, 59, 0.6);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Packet bay */
+        .data-packet {
+            position: absolute;
+            background: #fbbf24;
+            color: #000;
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 20px;
+            z-index: 50;
+            pointer-events: none;
+            transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 0 10px #fbbf24;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* Button Action */
+        .action-btn {
+            background: #1e293b;
+            border: 2px solid #475569;
+            transition: all 0.2s;
+        }
+        .action-btn:hover { background: #334155; border-color: #94a3b8; transform: translateY(-2px); }
+        .action-btn.correct { background: #059669; border-color: #34d399; }
+        .action-btn.wrong { background: #991b1b; border-color: #f87171; opacity: 0.5; }
+
+        /* Typing Effect */
+        @keyframes typeText {
+            from { width: 0; opacity: 0; }
+            to { width: 100%; opacity: 1; }
+        }
+        .typing {
+            overflow: hidden;
+            white-space: nowrap;
+            display: inline-block;
+            animation: typeText 0.5s steps(20, end);
+        }
+
+        /* CPU Pulse */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+        }
+        .cpu-active { animation: pulse 1s infinite; border-color: #a855f7 !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+    <div class="grid-bg"></div>
+
+    <!-- Header -->
+    <header class="p-4 bg-slate-900/80 backdrop-blur border-b border-sky-900 flex justify-between items-center shadow-lg z-10">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-microchip text-3xl text-sky-400"></i>
+            <h1 class="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
+                TRẠM MÔ PHỎNG LÕI MÁY TÍNH
+            </h1>
+        </div>
+        <div class="flex gap-4">
+            <div class="text-slate-300 text-sm">Bài học: <span id="level-display" class="font-bold text-sky-400 text-lg">1/30</span></div>
+        </div>
+    </header>
+
+    <main class="flex-1 p-4 flex flex-col lg:flex-row gap-6 max-w-7xl w-full mx-auto relative">
+        
+        <!-- TRÁI: CODE & CÂU HỎI -->
+        <div class="w-full lg:w-1/3 flex flex-col gap-4">
+            <!-- Code Editor -->
+            <div class="bg-slate-900 rounded-xl border border-slate-700 shadow-xl overflow-hidden flex flex-col">
+                <div class="bg-slate-800 px-4 py-2 text-xs text-slate-400 font-code border-b border-slate-700 flex justify-between">
+                    <span>main.cpp</span>
+                    <span class="text-emerald-400"><i class="fa-solid fa-play"></i> Đang chạy</span>
+                </div>
+                <div class="p-6 font-code text-[15px] leading-relaxed relative flex-1 overflow-y-auto" id="code-display">
+                    <!-- Code sẽ đổ vào đây -->
+                </div>
+            </div>
+
+            <!-- Khung hỏi đáp -->
+            <div class="bg-slate-800/80 backdrop-blur rounded-xl border border-slate-600 p-5 flex flex-col flex-1">
+                <h2 class="text-lg font-bold text-sky-300 mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-robot"></i> Hệ thống hỏi:
+                </h2>
+                <p id="question-text" class="text-slate-200 mb-4 leading-relaxed text-sm">
+                    Dòng lệnh trên yêu cầu máy tính làm gì ở bên trong?
+                </p>
+                <div class="flex flex-col gap-2 mt-auto" id="options-container">
+                    <!-- Nút đáp án -->
+                </div>
+            </div>
+        </div>
+
+        <!-- PHẢI: VISUALIZER (RAM, CPU, I/O) -->
+        <div class="w-full lg:w-2/3 flex flex-col gap-6">
+            <div class="flex gap-6 flex-1">
+                <!-- RAM -->
+                <div class="bg-slate-900/60 rounded-xl border border-blue-900/50 p-4 flex-1 flex flex-col relative" id="ram-area">
+                    <div class="text-blue-400 font-black tracking-widest text-sm mb-4 border-b border-blue-900/50 pb-2">
+                        <i class="fa-solid fa-memory"></i> KHO BỘ NHỚ (RAM)
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="ram-grid">
+                        <!-- Ô nhớ động -->
+                    </div>
+                </div>
+
+                <!-- CPU -->
+                <div class="bg-slate-900/60 rounded-xl border border-purple-900/50 p-4 w-1/3 flex flex-col items-center justify-center relative transition-all duration-300" id="cpu-core">
+                    <div class="text-purple-400 font-black tracking-widest text-sm mb-4 absolute top-4">
+                        <i class="fa-solid fa-brain"></i> CPU
+                    </div>
+                    <i class="fa-solid fa-microchip text-6xl text-purple-500 opacity-50 transition-all duration-500" id="cpu-icon"></i>
+                    <div class="mt-4 text-xs text-purple-300 font-code text-center h-8" id="cpu-status">Đang rảnh rỗi</div>
+                </div>
+            </div>
+
+            <!-- IO Area -->
+            <div class="flex gap-6 h-48">
+                <!-- Bàn phím -->
+                <div class="bg-slate-900/60 rounded-xl border border-slate-700 p-4 w-1/3 flex flex-col relative" id="keyboard-area">
+                    <div class="text-slate-400 font-bold text-sm mb-2"><i class="fa-solid fa-keyboard"></i> Bàn phím (cin)</div>
+                    <div class="flex-1 flex items-center justify-center">
+                        <div id="keyboard-input" class="bg-slate-800 border-b-2 border-emerald-500 w-full text-center py-2 font-code text-emerald-400 text-xl hidden"></div>
+                        <i class="fa-solid fa-keyboard text-5xl text-slate-600" id="keyboard-icon"></i>
+                    </div>
+                </div>
+
+                <!-- Màn hình -->
+                <div class="bg-black rounded-xl border-4 border-slate-700 p-4 flex-1 flex flex-col relative shadow-[0_0_20px_rgba(0,0,0,0.8)_inset]" id="monitor-area">
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-slate-700 px-3 py-1 rounded-full text-xs font-bold text-slate-300">
+                        <i class="fa-solid fa-desktop"></i> Màn hình (cout)
+                    </div>
+                    <div class="mt-4 font-code text-emerald-400 text-lg flex-1 overflow-y-auto" id="monitor-screen">
+                        <span class="text-slate-500">>_</span> <span id="monitor-content"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Overlay Animation -->
+    <div id="animation-layer" class="fixed inset-0 pointer-events-none z-50"></div>
+
+    <!-- Victory Modal -->
+    <div id="victory-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur z-50 flex items-center justify-center hidden">
+        <div class="text-center max-w-2xl p-6">
+            <i class="fa-solid fa-award text-8xl text-sky-400 mb-6"></i>
+            <h2 class="text-4xl md:text-5xl font-black text-white mb-4">HOÀN THÀNH XUẤT SẮC!</h2>
+            <p class="text-xl text-slate-300 mb-8 leading-relaxed">
+                Em đã vượt qua toàn bộ 30 thử thách cơ bản nhất của C++! Em đã thấy được chính xác cách RAM cất giữ dữ liệu, cách CPU tính toán và cách If/Else bảo vệ hệ thống. Tuyệt vời!
+            </p>
+            <button onclick="location.reload()" class="bg-sky-500 text-white font-bold py-3 px-8 rounded-full text-xl hover:bg-sky-400 transition shadow-[0_0_20px_rgba(56,189,248,0.5)]">
+                Chơi lại từ đầu
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA 30 BÀI HỌC CƠ BẢN ---
+        const levelData = [
+            // --- NHÓM 1: KHAI BÁO BIẾN ---
+            {
+                topic: "Tạo Biến (Số nguyên)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">diem</span>;`,
+                question: "Lệnh <code>int diem;</code> yêu cầu máy tính làm gì bên trong kho RAM?",
+                options: ["In chữ 'diem' ra màn hình.", "Tạo một chiếc hộp trống trong RAM, đặt tên là 'diem' để chứa SỐ NGUYÊN.", "Nhập số từ bàn phím."],
+                correct: 1, action: "CREATE_VAR", varName: "diem", val: "?",
+                explanation: "Đúng! 'int' là khai báo hộp để chứa các số nguyên (không có phẩy)."
+            },
+            {
+                topic: "Tạo Biến (Số thực)",
+                code: `<span class="text-blue-400">double</span> <span class="text-yellow-200">chieuCao</span>;`,
+                question: "Lệnh <code>double chieuCao;</code> tạo ra loại hộp gì?",
+                options: ["Hộp chứa 2 số nguyên.", "Hộp chứa số cực lớn.", "Hộp chứa SỐ THỰC (có phần thập phân/dấu phẩy)."],
+                correct: 2, action: "CREATE_VAR", varName: "chieuCao", val: "?",
+                explanation: "Chuẩn! 'double' (hoặc float) dùng để lưu các số lẻ như 1.5, 3.14..."
+            },
+            {
+                topic: "Tạo Biến (Ký tự)",
+                code: `<span class="text-blue-400">char</span> <span class="text-yellow-200">loai</span>;`,
+                question: "Lệnh <code>char loai;</code> dùng để chứa gì?",
+                options: ["Chỉ chứa duy nhất MỘT KÝ TỰ (chữ cái).", "Chứa một câu văn dài.", "Chứa số."],
+                correct: 0, action: "CREATE_VAR", varName: "loai", val: "?",
+                explanation: "Đúng! 'char' (character) chỉ là chiếc hộp tí hon chứa được đúng 1 chữ cái."
+            },
+            {
+                topic: "Tạo Biến (Chuỗi)",
+                code: `<span class="text-blue-400">string</span> <span class="text-yellow-200">ten</span>;`,
+                question: "Lệnh <code>string ten;</code> tạo hộp RAM để chứa gì?",
+                options: ["Chứa nhiều số.", "Chứa một chuỗi văn bản (nhiều chữ cái ghép lại).", "Chứa 1 ký tự duy nhất."],
+                correct: 1, action: "CREATE_VAR", varName: "ten", val: "?",
+                explanation: "Hoàn hảo! 'string' là chuỗi, giống như một dải ruy băng để ghi tên của bạn lên đó."
+            },
+            
+            // --- NHÓM 2: GÁN GIÁ TRỊ ---
+            {
+                topic: "Gán giá trị vào biến",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">diem</span>;\n<span class="text-yellow-200">diem</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">10</span>;`,
+                question: "Lệnh <code>diem = 10;</code> sẽ tạo ra hành động nào?",
+                options: ["So sánh xem hộp có bằng 10 không.", "Lấy số 10 nhét vào trong chiếc hộp tên 'diem'.", "Cộng thêm 10 vào hộp."],
+                correct: 1, action: "ASSIGN_VAL", varName: "diem", val: "10",
+                explanation: "Chuẩn! Phép gán (=) là việc lấy giá trị ở bên phải nhét vào hộp ở bên trái."
+            },
+            {
+                topic: "Gán chuỗi",
+                code: `<span class="text-blue-400">string</span> <span class="text-yellow-200">ten</span>;\n<span class="text-yellow-200">ten</span> <span class="text-sky-400">=</span> <span class="text-orange-300">"BiBi"</span>;`,
+                question: "Chuỗi văn bản 'BiBi' được đánh dấu bằng ký hiệu gì?",
+                options: ["Dấu ngoặc đơn ' '.", "Dấu ngoặc kép \" \".", "Dấu ngoặc vuông [ ]."],
+                correct: 1, action: "ASSIGN_VAL", varName: "ten", val: "BiBi",
+                explanation: "Chính xác! Kiểu string luôn phải bọc trong dấu ngoặc kép."
+            },
+            {
+                topic: "Vừa tạo vừa gán",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">mau</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">100</span>;`,
+                question: "Dòng lệnh này rút gọn điều gì?",
+                options: ["Không tạo hộp mà vẫn có số 100.", "Vừa tạo hộp 'mau', vừa lập tức nhét số 100 vào trong hộp.", "Kiểm tra xem hộp có 100 không."],
+                correct: 1, action: "ASSIGN_VAL", varName: "mau", val: "100",
+                explanation: "Tuyệt! Vừa khai báo vừa khởi tạo giá trị giúp viết code nhanh hơn rất nhiều."
+            },
+
+            // --- NHÓM 3: XUẤT (COUT) ---
+            {
+                topic: "Xuất chữ ra màn hình",
+                code: `<span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Xin chao"</span>;`,
+                question: "Dòng lệnh này sẽ hiển thị gì trên màn hình đen (Console)?",
+                options: ["Chữ cout", "Chữ Xin chao", "Báo lỗi"],
+                correct: 1, action: "COUT_TEXT", text: "Xin chao",
+                explanation: "Rất dễ phải không? Lệnh cout sẽ ném bất cứ chữ gì trong dấu ngoặc kép ra màn hình."
+            },
+            {
+                topic: "Xuất giá trị của biến",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">tuoi</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">12</span>;\n<span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-yellow-200">tuoi</span>;`,
+                question: "CPU sẽ làm gì khi đọc <code>cout &lt;&lt; tuoi;</code>?",
+                options: ["In ra chữ 'tuoi'.", "Vào RAM lấy số 12 trong hộp 'tuoi' và ném ra màn hình.", "Nhập số 12 từ bàn phím."],
+                correct: 1, action: "COUT_VAR", varName: "tuoi", val: "12",
+                explanation: "Đúng! Vì 'tuoi' không có ngoặc kép, nên CPU hiểu đó là tên hộp, nó sẽ lấy ĐỒ VẬT BÊN TRONG hộp ra in."
+            },
+            {
+                topic: "Xuống dòng",
+                code: `<span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-blue-400">endl</span>;`,
+                question: "Từ khóa <code>endl</code> (end line) có tác dụng gì?",
+                options: ["Kết thúc chương trình.", "Xuống dòng mới trên màn hình.", "In ra chữ 'endl'."],
+                correct: 1, action: "COUT_TEXT", text: "[Xuống dòng]",
+                explanation: "Chính xác! 'endl' giúp ngắt dòng để màn hình in nhìn gọn gàng hơn."
+            },
+
+            // --- NHÓM 4: NHẬP (CIN) ---
+            {
+                topic: "Nhập số liệu",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">diem</span>;\n<span class="text-blue-400">cin</span> <span class="text-sky-400">&gt;&gt;</span> <span class="text-yellow-200">diem</span>;`,
+                question: "Lệnh <code>cin &gt;&gt; diem;</code> mô tả luồng dữ liệu chạy như thế nào?",
+                options: ["Từ hộp 'diem' bay ra Màn hình.", "Dữ liệu người dùng gõ ở Bàn phím sẽ chui vào hộp 'diem'.", "Tự động gán số 0."],
+                correct: 1, action: "CIN_VAR", varName: "diem", inputVal: "99",
+                explanation: "Đúng rồi! 'cin' hút dữ liệu từ bàn phím (Input) và nhét thẳng vào hộp bộ nhớ."
+            },
+            {
+                topic: "Nhập chuỗi",
+                code: `<span class="text-blue-400">string</span> <span class="text-yellow-200">ten</span>;\n<span class="text-blue-400">cin</span> <span class="text-sky-400">&gt;&gt;</span> <span class="text-yellow-200">ten</span>;`,
+                question: "Khi chạy lệnh này, màn hình sẽ làm gì?",
+                options: ["Báo lỗi vì cin không dùng cho chữ.", "Nháy con trỏ chuột dừng lại, chờ bạn gõ tên rồi nhấn Enter.", "Tự in ra tên."],
+                correct: 1, action: "CIN_VAR", varName: "ten", inputVal: "Anna",
+                explanation: "Chính xác! Lệnh cin làm máy tính 'đứng im' chờ đợi cho đến khi bạn gõ xong phím Enter."
+            },
+
+            // --- NHÓM 5: TOÁN TỬ TOÁN HỌC ---
+            {
+                topic: "Phép Cộng (+)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">a</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">5</span>;\n<span class="text-yellow-200">a</span> <span class="text-sky-400">=</span> <span class="text-yellow-200">a</span> <span class="text-sky-400">+</span> <span class="text-emerald-400">3</span>;`,
+                question: "CPU sẽ xử lý lệnh này thế nào?",
+                options: ["Lấy 5 + 3 = 8, ghi đè số 8 vào hộp 'a'.", "Tạo thêm 1 hộp tên là '3'.", "In số 8 ra màn hình."],
+                correct: 0, action: "MATH_OP", varName: "a", oldVal: "5", operator: "+", num: "3", newVal: "8",
+                explanation: "Đúng! Nó luôn tính toán bên PHẢI dấu bằng trước, rồi mới cất kết quả vào hộp bên TRÁI."
+            },
+            {
+                topic: "Phép Trừ (-)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">mau</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">100</span>;\n<span class="text-yellow-200">mau</span> <span class="text-sky-400">=</span> <span class="text-yellow-200">mau</span> <span class="text-sky-400">-</span> <span class="text-emerald-400">20</span>;`,
+                question: "Sau dòng lệnh này, hộp 'mau' còn bao nhiêu?",
+                options: ["20", "100", "80"],
+                correct: 2, action: "MATH_OP", varName: "mau", oldVal: "100", operator: "-", num: "20", newVal: "80",
+                explanation: "Giỏi lắm! 100 trừ 20 còn 80, CPU thay số 100 bằng số 80."
+            },
+            {
+                topic: "Phép Nhân (*)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">vang</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">10</span>;\n<span class="text-yellow-200">vang</span> <span class="text-sky-400">=</span> <span class="text-yellow-200">vang</span> <span class="text-sky-400">*</span> <span class="text-emerald-400">2</span>;`,
+                question: "Dấu * trong lập trình đại diện cho phép tính gì?",
+                options: ["Phép bình phương.", "Phép nhân.", "Ký tự đặc biệt."],
+                correct: 1, action: "MATH_OP", varName: "vang", oldVal: "10", operator: "*", num: "2", newVal: "20",
+                explanation: "Đúng! Máy tính không dùng dấu 'x' để nhân, mà dùng dấu sao (*)."
+            },
+            {
+                topic: "Phép Chia Nguyên (/)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">banh</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">10</span>;\n<span class="text-yellow-200">banh</span> <span class="text-sky-400">=</span> <span class="text-yellow-200">banh</span> <span class="text-sky-400">/</span> <span class="text-emerald-400">3</span>;`,
+                question: "Vì hộp 'banh' là số nguyên (int), nên 10 chia 3 sẽ ra bao nhiêu?",
+                options: ["3.333", "3", "Lỗi"],
+                correct: 1, action: "MATH_OP", varName: "banh", oldVal: "10", operator: "/", num: "3", newVal: "3",
+                explanation: "Rất xuất sắc! Số nguyên chia số nguyên thì phần dư bị vứt đi, kết quả chỉ lấy phần nguyên là 3."
+            },
+            {
+                topic: "Phép Lấy Dư (%)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">du</span>;\n<span class="text-yellow-200">du</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">10</span> <span class="text-sky-400">%</span> <span class="text-emerald-400">3</span>;`,
+                question: "Ký hiệu % có nghĩa là Lấy phần dư. Vậy 10 % 3 ra bao nhiêu?",
+                options: ["3", "1", "10"],
+                correct: 1, action: "MATH_OP", varName: "du", oldVal: "0", operator: "%", num: "3", newVal: "1",
+                explanation: "Chính xác! 10 chia 3 được 3, dư 1. Phép % sẽ trả về con số 1 này."
+            },
+            {
+                topic: "Phép Cộng Dồn (+=)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">diem</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">10</span>;\n<span class="text-yellow-200">diem</span> <span class="text-sky-400">+=</span> <span class="text-emerald-400">5</span>;`,
+                question: "Lệnh <code>diem += 5;</code> là cách viết TẮT của lệnh nào?",
+                options: ["diem = 5;", "diem = diem + 5;", "diem + 5 = diem;"],
+                correct: 1, action: "MATH_OP", varName: "diem", oldVal: "10", operator: "+=", num: "5", newVal: "15",
+                explanation: "Tuyệt vời! Lập trình viên rất lười gõ dài, nên họ chế ra dấu += để viết cho lẹ."
+            },
+            {
+                topic: "Phép Trừ Dồn (-=)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">mau</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">100</span>;\n<span class="text-yellow-200">mau</span> <span class="text-sky-400">-=</span> <span class="text-emerald-400">20</span>;`,
+                question: "Hộp 'mau' sẽ còn lại giá trị bao nhiêu?",
+                options: ["80", "120", "20"],
+                correct: 0, action: "MATH_OP", varName: "mau", oldVal: "100", operator: "-=", num: "20", newVal: "80",
+                explanation: "Đúng! Nó giống hệt như mau = mau - 20."
+            },
+            {
+                topic: "Toán Tử Tăng (++)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">level</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">1</span>;\n<span class="text-yellow-200">level</span><span class="text-sky-400">++</span>;`,
+                question: "Dấu ++ viết liền sau tên biến có ý nghĩa gì?",
+                options: ["Gấp đôi giá trị biến.", "Tăng biến đó lên chính xác 1 đơn vị.", "Chỉnh độ ưu tiên cao nhất."],
+                correct: 1, action: "MATH_OP", varName: "level", oldVal: "1", operator: "++", num: "", newVal: "2",
+                explanation: "Đúng! <code>level++</code> là cách ngắn nhất để nói 'Hãy cộng 1 cho tôi'."
+            },
+            {
+                topic: "Toán Tử Giảm (--)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">mang</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">3</span>;\n<span class="text-yellow-200">mang</span><span class="text-sky-400">--</span>;`,
+                question: "Bị trừ mạng! Dấu -- sẽ làm gì?",
+                options: ["Giảm biến đó đi 1 đơn vị.", "Xóa biến đó đi.", "Biến biến đó thành số âm."],
+                correct: 0, action: "MATH_OP", varName: "mang", oldVal: "3", operator: "--", num: "", newVal: "2",
+                explanation: "Chuẩn! Toán tử -- rất hay dùng trong đếm ngược."
+            },
+
+            // --- NHÓM 6: ĐIỀU KIỆN (IF / ELSE) ---
+            {
+                topic: "Khối Điều Kiện (if)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">diem</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">8</span>;\n<span class="text-purple-400">if</span> (<span class="text-yellow-200">diem</span> <span class="text-sky-400">&gt;</span> <span class="text-emerald-400">5</span>) {\n  <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Do"</span>;\n}`,
+                question: "Khi gặp lệnh <code>if (diem > 5)</code>, CPU sẽ kiểm tra. Vì 8 lớn hơn 5 nên nó làm gì?",
+                options: ["Bỏ qua chữ 'Do'.", "Mở ngoặc nhọn, chạy khối lệnh bên trong và in ra chữ 'Do'.", "In ra chữ 'diem > 5'."],
+                correct: 1, action: "COMPARE", varName: "diem", val: "8", checkVal: "5", operator: ">", result: true,
+                explanation: "Hoàn hảo! 'if' là cái cổng. Điều kiện ĐÚNG (True) thì cổng mở, lệnh bên trong được chạy."
+            },
+            {
+                topic: "Khối Điều Kiện Sai",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">diem</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">3</span>;\n<span class="text-purple-400">if</span> (<span class="text-yellow-200">diem</span> <span class="text-sky-400">&gt;</span> <span class="text-emerald-400">5</span>) {\n  <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Do"</span>;\n}`,
+                question: "Lần này diem = 3. Điều kiện (3 > 5) là SAI (False). CPU sẽ làm gì?",
+                options: ["Vẫn in chữ 'Do'.", "Sửa số 3 thành 6.", "Đóng cổng! Lơ luôn toàn bộ khối lệnh bên trong ngoặc nhọn."],
+                correct: 2, action: "COMPARE", varName: "diem", val: "3", checkVal: "5", operator: ">", result: false,
+                explanation: "Đúng rồi! Cổng đóng lại, code bên trong bị lướt qua như chưa từng tồn tại."
+            },
+            {
+                topic: "So Sánh Bằng (==)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">mk</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">123</span>;\n<span class="text-purple-400">if</span> (<span class="text-yellow-200">mk</span> <span class="text-sky-400">==</span> <span class="text-emerald-400">123</span>) {\n  <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Mo"</span>;\n}`,
+                question: "Tại sao so sánh lại dùng HAI dấu bằng (==) thay vì MỘT dấu (=)?",
+                options: ["Vì mật khẩu dài.", "Vì 1 dấu (=) là GÁN, còn 2 dấu (==) mới là HỎI SO SÁNH.", "Cho đẹp."],
+                correct: 1, action: "COMPARE", varName: "mk", val: "123", checkVal: "123", operator: "==", result: true,
+                explanation: "Chính xác! Cực kỳ quan trọng: (=) là nhét đồ vào, (==) là soi kính lúp kiểm tra."
+            },
+            {
+                topic: "So Sánh Khác (!=)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">the</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">0</span>;\n<span class="text-purple-400">if</span> (<span class="text-yellow-200">the</span> <span class="text-sky-400">!=</span> <span class="text-emerald-400">1</span>) {\n  <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Sai the!"</span>;\n}`,
+                question: "Ký hiệu chấm than bằng (!=) có nghĩa là gì?",
+                options: ["Gấp than.", "KHÁC (Không bằng).", "Lớn hơn."],
+                correct: 1, action: "COMPARE", varName: "the", val: "0", checkVal: "1", operator: "!=", result: true,
+                explanation: "Tuyệt! Dấu chấm than (!) trong C++ luôn đại diện cho sự Phủ định (Không)."
+            },
+            {
+                topic: "Lớn hơn hoặc Bằng (>=)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">tuoi</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">18</span>;\n<span class="text-purple-400">if</span> (<span class="text-yellow-200">tuoi</span> <span class="text-sky-400">&gt;=</span> <span class="text-emerald-400">18</span>) {\n  <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Cho phep"</span>;\n}`,
+                question: "tuoi = 18. Điều kiện (tuoi >= 18) là Đúng hay Sai?",
+                options: ["Sai, vì 18 không lớn hơn 18.", "Đúng, vì nó CÓ BẰNG 18."],
+                correct: 1, action: "COMPARE", varName: "tuoi", val: "18", checkVal: "18", operator: ">=", result: true,
+                explanation: "Đúng! Ký hiệu >= (Hoặc <=) xử lý được cả trường hợp hai bên bằng nhau."
+            },
+            {
+                topic: "Ngã Ba Đường (if-else)",
+                code: `<span class="text-blue-400">int</span> <span class="text-yellow-200">pin</span> <span class="text-sky-400">=</span> <span class="text-emerald-400">10</span>;\n<span class="text-purple-400">if</span> (<span class="text-yellow-200">pin</span> <span class="text-sky-400">&gt;</span> <span class="text-emerald-400">20</span>) {\n  <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Bay!"</span>;\n} <span class="text-purple-400">else</span> {\n  <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Sac!"</span>;\n}`,
+                question: "Do pin=10 (điều kiện if bị SAI), nên máy tính làm gì?",
+                options: ["Không làm gì cả.", "In cả 'Bay!' và 'Sac!'.", "Nhảy ngay vào khối 'else' (Ngược lại) để in 'Sac!'."],
+                correct: 2, action: "COMPARE", varName: "pin", val: "10", checkVal: "20", operator: ">", result: false, hasElse: true,
+                explanation: "Chính xác! 'else' là phương án dự phòng. Khi 'if' sai, 'else' chắc chắn được chạy."
+            },
+            {
+                topic: "Nhiều Nhánh (else if)",
+                code: `<span class="text-purple-400">if</span> (<span class="text-yellow-200">diem</span> <span class="text-sky-400">==</span> <span class="text-emerald-400">10</span>) { <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Gioi"</span>; }\n<span class="text-purple-400">else if</span> (<span class="text-yellow-200">diem</span> <span class="text-sky-400">==</span> <span class="text-emerald-400">5</span>) { <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Trung Binh"</span>; }\n<span class="text-purple-400">else</span> { <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"Khac"</span>; }`,
+                question: "Nếu có 'else if', máy tính kiểm tra thế nào?",
+                options: ["Kiểm tra từ trên xuống, đúng ở nhánh nào thì chạy nhánh đó và DỪNG LẠI, không xét tiếp.", "Chạy hết tất cả.", "Chỉ chạy cái cuối."],
+                correct: 0, action: "COMPARE", varName: "diem", val: "5", checkVal: "10", operator: "==", result: false, hasElse: true, isElseIf: true,
+                explanation: "Rất chuẩn! Chuỗi if - else if - else giống như đi đường. Gặp lối rẽ nào đúng thì quẹo luôn, không đi tiếp nữa."
+            },
+
+            // --- NHÓM 7: LOGIC & TỔNG HỢP ---
+            {
+                topic: "Điều kiện kép (AND &&)",
+                code: `<span class="text-purple-400">if</span> (<span class="text-yellow-200">x</span> <span class="text-sky-400">&gt;</span> <span class="text-emerald-400">0</span> <span class="text-sky-400">&&</span> <span class="text-yellow-200">y</span> <span class="text-sky-400">&gt;</span> <span class="text-emerald-400">0</span>) {\n  <span class="text-blue-400">cout</span> <span class="text-sky-400">&lt;&lt;</span> <span class="text-orange-300">"OK"</span>;\n}`,
+                question: "Toán tử && (AND) yêu cầu CPU xử lý như thế nào?",
+                options: ["Chỉ kiểm tra y.", "Kiểm tra CẢ 2 vế. Chỉ khi CẢ 2 ĐỀU ĐÚNG thì mới mở cửa.", "1 vế đúng là được."],
+                correct: 1, action: "LOGIC_OP", varName1: "x", val1: "5", varName2: "y", val2: "10", operator: "&&",
+                explanation: "Chuẩn! && là chìa khóa kép. Một vế sai thôi là rớt toàn bộ."
+            },
+            {
+                topic: "Điều kiện kép (OR ||)",
+                code: `<span class="text-purple-400">if</span> (<span class="text-yellow-200">tien</span> <span class="text-sky-400">&gt;</span> <span class="text-emerald-400">0</span> <span class="text-sky-400">||</span> <span class="text-yellow-200">theVip</span> <span class="text-sky-400">==</span> <span class="text-emerald-400">1</span>)`,
+                question: "Toán tử || (OR) có nghĩa là 'HOẶC'. Nó có khó tính như && không?",
+                options: ["Khó hơn.", "Dễ chịu hơn! Chỉ cần ÍT NHẤT 1 VẾ ĐÚNG là được cho qua.", "Giống nhau."],
+                correct: 1, action: "LOGIC_OP", varName1: "tien", val1: "0", varName2: "theVip", val2: "1", operator: "||",
+                explanation: "Tuyệt vời! || như vé dự phòng, không có tiền nhưng có thẻ VIP thì vẫn được vào!"
+            }
+        ];
+
+        // --- HỆ THỐNG ĐIỀU KHIỂN ---
+        let currentLevel = 0;
+        let isAnimating = false;
+
+        // Lấy Elements
+        const uiLevel = document.getElementById("level-display");
+        const uiCode = document.getElementById("code-display");
+        const uiQuestion = document.getElementById("question-text");
+        const uiOptions = document.getElementById("options-container");
+        const uiRam = document.getElementById("ram-grid");
+        const uiMonitor = document.getElementById("monitor-content");
+        const uiLayer = document.getElementById("animation-layer");
+        const uiCpu = document.getElementById("cpu-core");
+        const uiCpuIcon = document.getElementById("cpu-icon");
+        const uiCpuStatus = document.getElementById("cpu-status");
+        
+        // Utils
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        function initGame() {
+            loadLevel();
+        }
+
+        function loadLevel() {
+            isAnimating = false;
+            const data = levelData[currentLevel];
+            
+            // Render text
+            uiLevel.innerText = `${currentLevel + 1}/${levelData.length}`;
+            uiCode.innerHTML = `<div class="text-slate-500 mb-2">// Bài ${currentLevel + 1}: ${data.topic}</div>` + data.code.replace(/\n/g, '<br>');
+            uiQuestion.innerHTML = data.question;
+            uiCpuStatus.innerText = "Đang rảnh rỗi";
+            uiCpu.classList.remove("cpu-active");
+
+            // Setup RAM ban đầu
+            setupEnvironment(data);
+
+            // Tạo Option
+            uiOptions.innerHTML = '';
+            data.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'action-btn w-full text-left p-3 md:p-4 rounded-xl text-sm font-bold text-slate-200 flex items-start gap-3';
+                btn.innerHTML = `<span class="bg-slate-700 text-sky-300 w-6 h-6 rounded flex items-center justify-center shrink-0 mt-0.5">${String.fromCharCode(65+index)}</span> <span>${opt}</span>`;
+                btn.onclick = () => handleAnswer(index, btn);
+                uiOptions.appendChild(btn);
+            });
+        }
+
+        function setupEnvironment(data) {
+            uiRam.innerHTML = '';
+            uiMonitor.innerHTML = '';
+            document.getElementById('keyboard-input').classList.add('hidden');
+            document.getElementById('keyboard-icon').classList.remove('hidden');
+
+            const makeRam = (n, v) => createRamCell(n, v);
+
+            switch(data.action) {
+                case "ASSIGN_VAL": case "CIN_VAR": makeRam(data.varName, "?"); break;
+                case "COUT_VAR": makeRam(data.varName, data.val); break;
+                case "MATH_OP": makeRam(data.varName, data.oldVal); break;
+                case "COMPARE": makeRam(data.varName, data.val); break;
+                case "LOGIC_OP": makeRam(data.varName1, data.val1); makeRam(data.varName2, data.val2); break;
+            }
+        }
+
+        async function handleAnswer(idx, btn) {
+            if (isAnimating) return;
+            const data = levelData[currentLevel];
+            
+            Array.from(uiOptions.children).forEach(b => { b.onclick = null; b.classList.add('opacity-50'); });
+            btn.classList.remove('opacity-50');
+
+            if (idx === data.correct) {
+                isAnimating = true;
+                btn.classList.add('correct');
+                btn.innerHTML += `<div class="ml-auto text-emerald-400"><i class="fa-solid fa-check-circle text-xl"></i></div>`;
+                
+                uiCpu.classList.add("cpu-active");
+                uiCpuStatus.innerText = "Đang thực thi...";
+
+                await playAnimation(data);
+                await sleep(500);
+                
+                alert("HỆ THỐNG: " + data.explanation);
+                currentLevel++;
+                if (currentLevel < levelData.length) loadLevel();
+                else document.getElementById("victory-modal").classList.remove("hidden");
+            } else {
+                btn.classList.add('wrong');
+                btn.innerHTML += `<div class="ml-auto text-red-400"><i class="fa-solid fa-times-circle text-xl"></i></div>`;
+                setTimeout(() => {
+                    alert("CPU Báo Lỗi: Suy luận sai rồi! Hãy nghĩ lại xem dòng code làm gì nhé.");
+                    loadLevel();
+                }, 500);
+            }
+        }
+
+        function createRamCell(name, val) {
+            const cell = document.createElement('div');
+            cell.id = `ram-${name}`;
+            cell.className = 'ram-cell p-3 flex flex-col items-center justify-center min-h-[70px]';
+            cell.innerHTML = `
+                <div class="text-[10px] md:text-xs text-blue-300 font-bold bg-slate-900 px-2 rounded absolute -top-2 whitespace-nowrap">${name}</div>
+                <div class="text-xl md:text-2xl font-black text-white val-display">${val}</div>
+            `;
+            uiRam.appendChild(cell);
+            return cell;
+        }
+
+        function getPos(id) {
+            const el = document.getElementById(id);
+            if(!el) return {x:0, y:0};
+            const r = el.getBoundingClientRect();
+            return { x: r.left + r.width/2, y: r.top + r.height/2, el };
+        }
+
+        // --- HỆ THỐNG ANIMATION GỌN GÀNG MỚI BẰNG ASYNC/AWAIT ---
+        async function playAnimation(data) {
+            const flyText = (text, x, y) => {
+                const f = document.createElement('div');
+                f.className = 'data-packet text-sm md:text-base';
+                f.innerText = text;
+                f.style.left = `${x}px`; f.style.top = `${y}px`;
+                f.style.transform = `translate(-50%, -50%)`;
+                uiLayer.appendChild(f);
+                return f;
+            };
+
+            const cpu = getPos('cpu-icon');
+            const mon = getPos('monitor-screen');
+            const kb = getPos('keyboard-icon');
+
+            if (data.action === "CREATE_VAR") {
+                uiCpuStatus.innerText = "Yêu cầu cấp phát vùng nhớ";
+                await sleep(500);
+                createRamCell(data.varName, data.val).classList.add('active');
+                await sleep(800);
+            } 
+            else if (data.action === "ASSIGN_VAL") {
+                uiCpuStatus.innerText = "Lệnh Ghi: Gửi dữ liệu vào RAM";
+                const f = flyText(data.val, cpu.x, cpu.y);
+                await sleep(100);
+                const ram = getPos(`ram-${data.varName}`);
+                f.style.left = `${ram.x}px`; f.style.top = `${ram.y}px`;
+                ram.el.classList.add('active');
+                await sleep(800);
+                f.remove();
+                ram.el.querySelector('.val-display').innerText = data.val;
+            }
+            else if (data.action === "COUT_TEXT") {
+                uiCpuStatus.innerText = "Xuất chuỗi ra màn hình";
+                const f = flyText(`"${data.text}"`, cpu.x, cpu.y);
+                await sleep(100);
+                f.style.left = `${mon.x}px`; f.style.top = `${mon.y}px`;
+                await sleep(800);
+                f.remove();
+                uiMonitor.innerHTML = `<span class="typing text-emerald-400">${data.text}</span>`;
+            }
+            else if (data.action === "COUT_VAR") {
+                uiCpuStatus.innerText = "Đọc hộp bộ nhớ";
+                const ram = getPos(`ram-${data.varName}`);
+                ram.el.classList.add('active');
+                await sleep(400);
+                const f = flyText(data.val, ram.x, ram.y);
+                await sleep(100);
+                f.style.left = `${mon.x}px`; f.style.top = `${mon.y}px`;
+                await sleep(800);
+                f.remove();
+                uiMonitor.innerHTML = `<span class="typing text-emerald-400">${data.val}</span>`;
+            }
+            else if (data.action === "CIN_VAR") {
+                uiCpuStatus.innerText = "Chờ nhập liệu từ bàn phím...";
+                document.getElementById('keyboard-icon').classList.add('hidden');
+                const kbInp = document.getElementById('keyboard-input');
+                kbInp.classList.remove('hidden');
+                
+                kbInp.innerText = "";
+                for(let char of data.inputVal) {
+                    kbInp.innerText += char;
+                    await sleep(150);
+                }
+                await sleep(300);
+                
+                uiCpuStatus.innerText = "Lưu Input vào RAM";
+                const f = flyText(data.inputVal, kb.x, kb.y);
+                const ram = getPos(`ram-${data.varName}`);
+                await sleep(100);
+                f.style.left = `${ram.x}px`; f.style.top = `${ram.y}px`;
+                ram.el.classList.add('active');
+                await sleep(800);
+                f.remove();
+                ram.el.querySelector('.val-display').innerText = data.inputVal;
+            }
+            else if (data.action === "MATH_OP") {
+                uiCpuStatus.innerText = "Đọc giá trị cũ từ RAM";
+                const ram = getPos(`ram-${data.varName}`);
+                ram.el.classList.add('active');
+                await sleep(400);
+                const f = flyText(data.oldVal, ram.x, ram.y);
+                await sleep(100);
+                f.style.left = `${cpu.x}px`; f.style.top = `${cpu.y}px`;
+                await sleep(800);
+                
+                uiCpuStatus.innerText = "ALU đang tính toán...";
+                f.innerText = data.num ? `${data.oldVal} ${data.operator} ${data.num} = ${data.newVal}` : `${data.oldVal}${data.operator} = ${data.newVal}`;
+                f.style.background = "#a855f7";
+                f.style.transform = `translate(-50%, -150%) scale(1.2)`;
+                await sleep(1500);
+                
+                uiCpuStatus.innerText = "Ghi kết quả mới đè lên RAM";
+                f.innerText = data.newVal;
+                f.style.background = "#fbbf24";
+                f.style.transform = `translate(-50%, -50%) scale(1)`;
+                await sleep(100);
+                f.style.left = `${ram.x}px`; f.style.top = `${ram.y}px`;
+                await sleep(800);
+                f.remove();
+                ram.el.querySelector('.val-display').innerText = data.newVal;
+            }
+            else if (data.action === "COMPARE") {
+                uiCpuStatus.innerText = "Kéo dữ liệu lên để So Sánh";
+                const ram = getPos(`ram-${data.varName}`);
+                ram.el.classList.add('active');
+                await sleep(400);
+                const f = flyText(data.val, ram.x, ram.y);
+                await sleep(100);
+                f.style.left = `${cpu.x}px`; f.style.top = `${cpu.y}px`;
+                await sleep(800);
+                
+                f.innerText = `${data.val} ${data.operator} ${data.checkVal} ?`;
+                f.style.transform = `translate(-50%, -150%) scale(1.2)`;
+                await sleep(1500);
+                
+                f.style.background = data.result ? "#10b981" : "#ef4444";
+                f.innerText = data.result ? "ĐÚNG -> Cho phép chạy lệnh" : (data.hasElse ? "SAI -> Bỏ qua, chạy else" : "SAI -> Đóng cửa, bỏ qua lệnh");
+                uiCpuStatus.innerText = "Đưa ra quyết định!";
+                await sleep(2000);
+                f.remove();
+            }
+            else if (data.action === "LOGIC_OP") {
+                uiCpuStatus.innerText = "Đọc biến để kiểm tra Logic";
+                const r1 = getPos(`ram-${data.varName1}`);
+                const r2 = getPos(`ram-${data.varName2}`);
+                r1.el.classList.add('active');
+                r2.el.classList.add('active');
+                await sleep(400);
+                const f = flyText(`${data.val1} và ${data.val2}`, r1.x, r1.y); // Chỉnh điểm bay cho dễ nhìn
+                await sleep(100);
+                f.style.left = `${cpu.x}px`; f.style.top = `${cpu.y}px`;
+                await sleep(800);
+                
+                f.innerText = `Kiểm tra ${data.operator} ?`;
+                f.style.transform = `translate(-50%, -150%) scale(1.2)`;
+                await sleep(1500);
+                
+                f.style.background = "#10b981"; // Đối với 2 ví dụ này mình hardcode luôn kết quả TRUE để hs dễ hiểu
+                f.innerText = "Điều kiện thỏa mãn -> Cho đi qua!";
+                await sleep(2000);
+                f.remove();
+            }
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
