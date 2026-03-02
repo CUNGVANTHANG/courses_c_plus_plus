@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học Viện Phi Hành Gia C++ - Game học lập trình lớp 6</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Hiệu ứng trôi nổi cho Robot */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .robot-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Hiệu ứng rung khi nhập sai */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.4s ease-in-out;
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 10px #ef4444;
+        }
+
+        /* Hiệu ứng chớp nháy viền khi thành công */
+        @keyframes successGlow {
+            0%, 100% { box-shadow: 0 0 15px #10b981; }
+            50% { box-shadow: 0 0 30px #10b981; }
+        }
+        .success-glow {
+            animation: successGlow 1.5s infinite;
+            border-color: #10b981 !important;
+        }
+
+        /* Style cho ô nhập code */
+        .code-input {
+            background-color: #1e293b;
+            color: #fbbf24; /* Vàng sáng cho nổi bật */
+            border: 2px dashed #64748b;
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .code-input:focus {
+            border-color: #3b82f6;
+            border-style: solid;
+            background-color: #0f172a;
+        }
+
+        /* Font chữ code */
+        .font-code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .stars-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: starsAnim 100s linear infinite;
+        }
+        @keyframes starsAnim {
+            from { transform: translateY(0); }
+            to { transform: translateY(-2000px); }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center py-6 px-4">
+    <div class="stars-bg"></div>
+
+    <!-- Header -->
+    <header class="w-full max-w-5xl flex justify-between items-center bg-white/10 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white/20 mb-6">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-500 p-2 rounded-lg text-white text-2xl">
+                <i class="fa-solid fa-rocket"></i>
+            </div>
+            <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+                Học Viện C++
+            </h1>
+        </div>
+        <div class="flex gap-6 items-center font-bold">
+            <div class="flex flex-col items-center">
+                <span class="text-gray-300 text-sm">Cấp độ</span>
+                <span class="text-xl text-blue-400" id="ui-level">1/30</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-gray-300 text-sm">Điểm kinh nghiệm</span>
+                <span class="text-xl text-yellow-400"><i class="fa-solid fa-star"></i> <span id="ui-score">0</span></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Area -->
+    <main class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Story & Instructions -->
+        <div class="col-span-1 lg:col-span-5 flex flex-col gap-6">
+            <!-- Robot Character -->
+            <div class="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20 text-center relative mt-8">
+                <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 text-7xl robot-float drop-shadow-2xl" id="robot-emoji">
+                    🤖
+                </div>
+                <h2 class="text-xl font-bold mt-8 text-blue-300" id="robot-name">Robot BiBi</h2>
+                <div class="mt-4 bg-white/20 p-4 rounded-xl relative">
+                    <!-- Speech Bubble Arrow -->
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-b-[15px] border-b-white/20"></div>
+                    <p class="text-lg leading-relaxed" id="story-text">
+                        Chào cậu! Tớ là BiBi. Tàu vũ trụ của tớ đang bị hỏng hệ thống. Cậu giúp tớ dùng C++ để sửa nó nhé!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Task Description -->
+            <div class="bg-gradient-to-br from-indigo-900/80 to-purple-900/80 p-6 rounded-2xl border border-indigo-400/50 shadow-lg">
+                <h3 class="text-xl font-bold text-yellow-300 mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check"></i> Nhiệm vụ của bạn:
+                </h3>
+                <p id="task-desc" class="text-base text-gray-200">
+                    Sử dụng lệnh xuất dữ liệu để đánh thức hệ thống.
+                </p>
+                <div class="mt-4 text-sm text-gray-400 p-3 bg-black/30 rounded-lg flex items-start gap-2">
+                    <i class="fa-solid fa-lightbulb text-yellow-400 mt-1"></i>
+                    <span id="hint-text">Gợi ý: Trong C++, để in ra màn hình ta dùng từ khóa bắt đầu bằng chữ "c" và kết thúc bằng "out".</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Code Editor & Console -->
+        <div class="col-span-1 lg:col-span-7 flex flex-col gap-4">
+            <!-- IDE Window -->
+            <div class="bg-[#1e1e1e] rounded-xl shadow-2xl border border-gray-700 overflow-hidden flex flex-col h-full">
+                <!-- IDE Header -->
+                <div class="bg-[#2d2d2d] px-4 py-2 flex items-center justify-between border-b border-black">
+                    <div class="flex gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                    <div class="text-gray-400 text-sm font-code flex items-center gap-2">
+                        <i class="fa-brands fa-cuttlefish text-blue-500"></i> main.cpp
+                    </div>
+                    <div></div>
+                </div>
+                
+                <!-- Editor Content -->
+                <div class="p-6 text-gray-300 font-code text-lg leading-loose overflow-x-auto relative" id="code-editor">
+                    <!-- Code blocks will be generated by JS -->
+                </div>
+
+                <!-- Run Button Area -->
+                <div class="bg-[#252526] p-4 flex justify-end items-center border-t border-gray-700">
+                    <button onclick="checkAnswer()" class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-bold py-3 px-8 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] transform transition hover:scale-105 active:scale-95 flex items-center gap-2 text-lg">
+                        <i class="fa-solid fa-play"></i> Chạy Code
+                    </button>
+                </div>
+            </div>
+
+            <!-- Console Output -->
+            <div class="bg-black rounded-xl p-4 border border-gray-800 font-code text-sm">
+                <div class="text-gray-500 mb-2 border-b border-gray-800 pb-2">Terminal / Console</div>
+                <div id="console-output" class="text-gray-300 min-h-[60px]">
+                    <span class="text-blue-400">>_</span> Đang chờ lệnh...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Success ModalOverlay -->
+    <div id="success-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-gradient-to-b from-blue-900 to-gray-900 border-2 border-emerald-400 p-8 rounded-3xl max-w-md w-full text-center transform scale-95 transition-transform duration-300" id="modal-content">
+            <div class="text-6xl mb-4">🎉</div>
+            <h2 class="text-3xl font-black text-emerald-400 mb-4">Chính xác!</h2>
+            <p id="success-message" class="text-lg text-gray-200 mb-8">
+                Tuyệt vời! Bạn đã hoàn thành nhiệm vụ xuất sắc.
+            </p>
+            <div class="bg-black/50 p-4 rounded-xl mb-6 font-code text-left text-emerald-300 text-sm" id="success-console">
+                > System check: OK
+            </div>
+            <button onclick="nextLevel()" class="w-full bg-blue-500 hover:bg-blue-400 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform transition active:scale-95 text-xl flex items-center justify-center gap-2">
+                Tiếp tục hành trình <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- End Game Modal -->
+    <div id="end-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center hidden">
+        <div class="text-center p-8 max-w-2xl">
+            <div class="text-8xl mb-6 float-anim">🚀</div>
+            <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-6">
+                CHÚC MỪNG PHI HÀNH GIA!
+            </h1>
+            <p class="text-xl text-gray-200 mb-8 leading-relaxed">
+                Bạn đã vượt qua toàn bộ 30 bài học C++ của Học Viện Phi Hành Gia! Bạn đã làm chủ từ Nhập Xuất, Vòng lặp, Câu lệnh điều kiện cho đến Mảng và Hàm. Quá xuất sắc!
+            </p>
+            <div class="text-3xl text-yellow-400 font-bold mb-10 flex justify-center items-center gap-3">
+                <i class="fa-solid fa-star"></i> Điểm tổng kết: <span id="final-score">0</span> XP
+            </div>
+            <button onclick="location.reload()" class="bg-white text-blue-900 font-black py-4 px-10 rounded-full text-xl hover:bg-gray-200 transition shadow-[0_0_30px_rgba(255,255,255,0.5)]">
+                Chơi lại từ đầu
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA BÀI HỌC ---
+        const levelData = [
+            // --- 15 BÀI CŨ ---
+            {
+                title: "Bài 1: Lời chào vũ trụ (Lệnh cout)",
+                story: "Hệ thống tàu đang ngủ đông. Cậu hãy dùng C++ để in ra màn hình dòng chữ 'Xin chao' để đánh thức hệ thống nhé!",
+                task: "Điền đúng từ khóa để in dữ liệu ra màn hình.",
+                hint: "Gợi ý: Lệnh in (xuất) trong C++ là cout (character output).",
+                codeHTML: `
+                    <span class="text-purple-400">#include</span> <span class="text-green-400">&lt;iostream&gt;</span><br>
+                    <span class="text-purple-400">using namespace</span> std;<br><br>
+                    <span class="text-blue-400">int</span> <span class="text-yellow-200">main</span>() {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">// Điền từ khóa vào ô trống:</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="input-0" class="code-input w-20" placeholder="???"> <span class="text-blue-300">&lt;&lt;</span> <span class="text-orange-300">"Xin chao vu tru!"</span>;<br><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">return</span> <span class="text-green-300">0</span>;<br>
+                    }
+                `,
+                answers: ["cout"],
+                successMsg: "Hệ thống đã nhận được lời chào! Nhớ nhé: <b>cout &lt;&lt;</b> dùng để in thông tin ra màn hình.",
+                consoleOutput: "Xin chao vu tru!",
+                emoji: "😴"
+            },
+            {
+                title: "Bài 2: Nhập mật khẩu (Lệnh cin)",
+                story: "Hệ thống đã thức nhưng yêu cầu mật khẩu để mở khóa. Cậu hãy viết lệnh giúp tớ NHẬP dữ liệu từ bàn phím vào biến <i>matKhau</i> nhé.",
+                task: "Điền từ khóa để nhận dữ liệu nhập vào (Input).",
+                hint: "Gợi ý: Lệnh nhập trong C++ là cin (character input), đi kèm với dấu >>.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> <span class="text-yellow-200">main</span>() {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue-400">int</span> matKhau;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">// Điền lệnh nhập dữ liệu:</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="input-0" class="code-input w-20" placeholder="???"> <span class="text-blue-300">&gt;&gt;</span> matKhau;<br><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Dang xu ly..."</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">return</span> <span class="text-green-300">0</span>;<br>
+                    }
+                `,
+                answers: ["cin"],
+                successMsg: "Mật khẩu đã được nhập thành công! Nhớ nhé: <b>cin &gt;&gt;</b> dùng để lấy dữ liệu người dùng nhập vào.",
+                consoleOutput: "Dang xu ly...\nMat khau da duoc luu!",
+                emoji: "🔐"
+            },
+            {
+                title: "Bài 3: Tính toán năng lượng (Phép gán & Toán tử)",
+                story: "Mở khóa thành công! Bây giờ tàu cần tính tổng năng lượng từ 2 cục pin. Cậu hãy điền DẤU BẰNG (gán) và DẤU CỘNG để tính tổng nhé!",
+                task: "Điền toán tử gán và toán tử cộng để tính tongNangLuong = pin1 + pin2.",
+                hint: "Gợi ý: Phép gán là dấu =, phép cộng là dấu +.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> <span class="text-yellow-200">main</span>() {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue-400">int</span> pin1 <span class="text-blue-300">=</span> <span class="text-green-300">30</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue-400">int</span> pin2 <span class="text-blue-300">=</span> <span class="text-green-300">20</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue-400">int</span> tongNangLuong;<br><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">// Điền dấu bằng và dấu cộng:</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;tongNangLuong <input type="text" id="input-0" class="code-input w-12" placeholder="?"> pin1 <input type="text" id="input-1" class="code-input w-12" placeholder="?"> pin2;<br><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">return</span> <span class="text-green-300">0</span>;<br>
+                    }
+                `,
+                answers: ["=", "+"],
+                successMsg: "Pin đã sạc đầy 50%! Bạn đã biết cách dùng biến, phép gán (=) và toán tử (+) rồi đấy.",
+                consoleOutput: "tongNangLuong = 50",
+                emoji: "🔋"
+            },
+            {
+                title: "Bài 4: Khởi hành (Câu lệnh điều kiện IF)",
+                story: "Mọi thứ đã sẵn sàng. Nhưng ta chỉ được cất cánh NẾU (if) năng lượng lớn hơn 40. Hãy viết câu lệnh điều kiện cuối cùng này!",
+                task: "Điền từ khóa 'if' để kiểm tra điều kiện năng lượng.",
+                hint: "Gợi ý: Lệnh điều kiện trong tiếng Anh và trong C++ đều là 'if'.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> <span class="text-yellow-200">main</span>() {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue-400">int</span> nangLuong <span class="text-blue-300">=</span> <span class="text-green-300">50</span>;<br><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">// Nếu năng lượng > 40 thì cất cánh:</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="input-0" class="code-input w-16" placeholder="???"> (nangLuong &gt; <span class="text-green-300">40</span>) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Vuuut! Cat canh thoi!"</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;}<br><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">return</span> <span class="text-green-300">0</span>;<br>
+                    }
+                `,
+                answers: ["if"],
+                successMsg: "Hoan hô!!! Tàu vũ trụ đã cất cánh an toàn. Cấu trúc <b>if (điều kiện)</b> rất quan trọng trong lập trình đó nha!",
+                consoleOutput: "Vuuut! Cat canh thoi! 🚀",
+                emoji: "🛸"
+            },
+            {
+                title: "Bài 5: Tránh thiên thạch (Lệnh else)",
+                story: "Ôi không! Phía trước có thiên thạch. NẾU (if) khoảng cách an toàn thì bay thẳng, NGƯỢC LẠI (else) thì phải rẽ trái. Hãy điền từ khóa còn thiếu!",
+                task: "Điền từ khóa để xử lý trường hợp ngược lại của 'if'.",
+                hint: "Gợi ý: Từ khóa để chỉ 'ngược lại' trong C++ là 'else'.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> khoangCach <span class="text-blue-300">=</span> <span class="text-green-300">50</span>;<br><br>
+                    <span class="text-purple-400">if</span> (khoangCach &gt; <span class="text-green-300">100</span>) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Bay thang!"</span>;<br>
+                    } <input type="text" id="input-0" class="code-input w-16" placeholder="???"> {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Re trai khan cap!"</span>;<br>
+                    }
+                `,
+                answers: ["else"],
+                successMsg: "Phù! Tàu đã rẽ trái an toàn. Lệnh <b>else</b> luôn đi sau <b>if</b> để xử lý trường hợp điều kiện if bị sai.",
+                consoleOutput: "Re trai khan cap! ☄️",
+                emoji: "😰"
+            },
+            {
+                title: "Bài 6: Cảnh báo đa cấp độ (Lệnh else if)",
+                story: "Hệ thống radar phát hiện vật thể. Nếu ở xa thì an toàn, nếu ở mức trung bình thì cảnh báo, còn lại là nguy hiểm. Dùng 'else if' để thêm điều kiện nhé!",
+                task: "Điền 'else if' để kiểm tra điều kiện trung bình.",
+                hint: "Gợi ý: Dùng else if (viết cách nhau) để kiểm tra thêm một điều kiện mới.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> khoangCach <span class="text-blue-300">=</span> <span class="text-green-300">50</span>;<br><br>
+                    <span class="text-purple-400">if</span> (khoangCach &gt; <span class="text-green-300">100</span>) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"An toan!"</span>;<br>
+                    } <input type="text" id="input-0" class="code-input w-24" placeholder="???"> (khoangCach &gt; <span class="text-green-300">30</span>) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Chu y quan sat!"</span>;<br>
+                    } <span class="text-purple-400">else</span> {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Nguy hiem!"</span>;<br>
+                    }
+                `,
+                answers: ["else if"],
+                successMsg: "Tuyệt vời! Bạn có thể dùng nhiều khối lệnh <b>else if</b> để kiểm tra nhiều trường hợp khác nhau.",
+                consoleOutput: "Chu y quan sat! 📡",
+                emoji: "🧐"
+            },
+            {
+                title: "Bài 7: Tiêu hao năng lượng (Phép trừ)",
+                story: "Tàu vừa kích hoạt khiên năng lượng từ tính bảo vệ. Năng lượng sẽ bị giảm đi. Cậu hãy dùng phép trừ để tính năng lượng còn lại nhé!",
+                task: "Điền toán tử trừ để tính: conLai = banDau - tieuHao.",
+                hint: "Gợi ý: Phép trừ trong C++ là dấu gạch ngang (-).",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> banDau <span class="text-blue-300">=</span> <span class="text-green-300">100</span>;<br>
+                    <span class="text-blue-400">int</span> tieuHao <span class="text-blue-300">=</span> <span class="text-green-300">30</span>;<br><br>
+                    <span class="text-blue-400">int</span> conLai <span class="text-blue-300">=</span> banDau <input type="text" id="input-0" class="code-input w-12" placeholder="?"> tieuHao;<br><br>
+                    cout &lt;&lt; <span class="text-orange-300">"Nang luong con: "</span> &lt;&lt; conLai;
+                `,
+                answers: ["-"],
+                successMsg: "Hệ thống đã cập nhật! Phép trừ <b>-</b> giúp chúng ta tính toán các giá trị hao hụt.",
+                consoleOutput: "Nang luong con: 70",
+                emoji: "📉"
+            },
+            {
+                title: "Bài 8: Tính quãng đường (Phép nhân)",
+                story: "Để biết tàu đã bay được bao xa, ta cần lấy vận tốc nhân với thời gian. Cậu giúp tớ điền dấu nhân nhé!",
+                task: "Điền toán tử nhân để tính quãng đường = vận tốc * thời gian.",
+                hint: "Gợi ý: Dấu nhân trong lập trình không phải chữ x, mà là dấu sao (*).",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> vanToc <span class="text-blue-300">=</span> <span class="text-green-300">20</span>;<br>
+                    <span class="text-blue-400">int</span> thoiGian <span class="text-blue-300">=</span> <span class="text-green-300">5</span>;<br><br>
+                    <span class="text-blue-400">int</span> quangDuong <span class="text-blue-300">=</span> vanToc <input type="text" id="input-0" class="code-input w-12" placeholder="?"> thoiGian;<br><br>
+                    cout &lt;&lt; <span class="text-orange-300">"Da bay duoc: "</span> &lt;&lt; quangDuong;
+                `,
+                answers: ["*"],
+                successMsg: "Chính xác! Trong C++ và hầu hết các ngôn ngữ lập trình, dấu <b>*</b> dùng để thực hiện phép nhân.",
+                consoleOutput: "Da bay duoc: 100 🌌",
+                emoji: "🌠"
+            },
+            {
+                title: "Bài 9: Chia đều tài nguyên (Phép chia)",
+                story: "Chúng ta có 100 hộp thức ăn cần chia đều cho 4 phi hành gia. Dùng phép chia để tính xem mỗi người được bao nhiêu hộp nào!",
+                task: "Điền toán tử chia để chia đều thức ăn.",
+                hint: "Gợi ý: Dấu chia trong lập trình là dấu gạch chéo xuôi (/).",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> thucAn <span class="text-blue-300">=</span> <span class="text-green-300">100</span>;<br>
+                    <span class="text-blue-400">int</span> phiHanhGia <span class="text-blue-300">=</span> <span class="text-green-300">4</span>;<br><br>
+                    <span class="text-blue-400">int</span> phanAn <span class="text-blue-300">=</span> thucAn <input type="text" id="input-0" class="code-input w-12" placeholder="?"> phiHanhGia;<br><br>
+                    cout &lt;&lt; <span class="text-orange-300">"Moi nguoi duoc: "</span> &lt;&lt; phanAn;
+                `,
+                answers: ["/"],
+                successMsg: "Chia rất công bằng! Dấu <b>/</b> là phép chia. Lưu ý nếu lấy số nguyên chia số nguyên thì kết quả cũng là số nguyên nhé.",
+                consoleOutput: "Moi nguoi duoc: 25",
+                emoji: "🍱"
+            },
+            {
+                title: "Bài 10: Chìa khóa kép (Toán tử AND)",
+                story: "Khoang chứa đồ bí mật chỉ mở nếu phi hành gia quét CẢ thẻ từ VÀ vân tay. Trong C++, chữ VÀ được viết bằng ký hiệu đặc biệt.",
+                task: "Điền toán tử AND (&&) để kết hợp 2 điều kiện phải cùng đúng.",
+                hint: "Gợi ý: Toán tử logic AND (VÀ) là 2 dấu và viết liền nhau: &&.",
+                codeHTML: `
+                    <span class="text-blue-400">bool</span> coTheTu <span class="text-blue-300">=</span> <span class="text-purple-400">true</span>;<br>
+                    <span class="text-blue-400">bool</span> coVanTay <span class="text-blue-300">=</span> <span class="text-purple-400">true</span>;<br><br>
+                    <span class="text-purple-400">if</span> (coTheTu <input type="text" id="input-0" class="code-input w-12" placeholder="??"> coVanTay) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Mo cua khoang chua!"</span>;<br>
+                    }
+                `,
+                answers: ["&&"],
+                successMsg: "Cửa đã mở! Dùng <b>&&</b> khi bạn muốn yêu cầu TẤT CẢ các điều kiện đều phải đúng.",
+                consoleOutput: "Mo cua khoang chua! 🚪",
+                emoji: "🔑"
+            },
+            {
+                title: "Bài 11: Mở khóa khẩn cấp (Toán tử OR)",
+                story: "Trong trường hợp khẩn cấp, cửa thoát hiểm sẽ mở nếu bạn nhập Mật khẩu HOẶC dùng Búa đập kính. Chữ HOẶC trong C++ là gì nhỉ?",
+                task: "Điền toán tử OR (||) để kiểm tra chỉ cần 1 trong 2 điều kiện đúng.",
+                hint: "Gợi ý: Toán tử OR (HOẶC) là 2 dấu gạch đứng liền nhau: || (nhấn Shift + phím gạch chéo ngược trên bàn phím).",
+                codeHTML: `
+                    <span class="text-blue-400">bool</span> nhapMatKhau <span class="text-blue-300">=</span> <span class="text-purple-400">false</span>;<br>
+                    <span class="text-blue-400">bool</span> dapKinh <span class="text-blue-300">=</span> <span class="text-purple-400">true</span>;<br><br>
+                    <span class="text-purple-400">if</span> (nhapMatKhau <input type="text" id="input-0" class="code-input w-12" placeholder="??"> dapKinh) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Cua thoat hiem mo!"</span>;<br>
+                    }
+                `,
+                answers: ["||"],
+                successMsg: "Kính đã vỡ, cửa đã mở! Dùng toán tử <b>||</b> khi chỉ cần ÍT NHẤT 1 điều kiện đúng là đủ.",
+                consoleOutput: "Cua thoat hiem mo! 🚨",
+                emoji: "🔨"
+            },
+            {
+                title: "Bài 12: Đếm ngược cất cánh (Vòng lặp while)",
+                story: "Tàu cần đếm ngược từ 3 xuống 1. Thay vì viết 3 dòng lệnh giống nhau, ta dùng vòng lặp TRONG KHI (while). Giúp tớ điền từ khóa nhé!",
+                task: "Điền từ khóa while để tạo vòng lặp.",
+                hint: "Gợi ý: Từ khóa có nghĩa là 'trong khi' trong tiếng Anh: while.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> dem <span class="text-blue-300">=</span> <span class="text-green-300">3</span>;<br><br>
+                    <input type="text" id="input-0" class="code-input w-20" placeholder="???"> (dem &gt; <span class="text-green-300">0</span>) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; dem &lt;&lt; <span class="text-orange-300">"..."</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;dem <span class="text-blue-300">=</span> dem - <span class="text-green-300">1</span>;<br>
+                    }<br>
+                    cout &lt;&lt; <span class="text-orange-300">"Phat hoa!"</span>;
+                `,
+                answers: ["while"],
+                successMsg: "Tuyệt vời! Vòng lặp <b>while</b> giúp mã chạy lặp đi lặp lại miễn là điều kiện kiểm tra vẫn còn đúng.",
+                consoleOutput: "3...2...1...Phat hoa! 🔥",
+                emoji: "⏱️"
+            },
+            {
+                title: "Bài 13: Quét Radar (Vòng lặp for)",
+                story: "Radar cần xoay đúng 5 vòng để quét khu vực xung quanh. Khi biết trước chính xác số lần lặp, người ta thường dùng vòng lặp FOR.",
+                task: "Điền từ khóa for để lặp 5 lần.",
+                hint: "Gợi ý: Cấu trúc lặp này bắt đầu bằng từ khóa 'for'.",
+                codeHTML: `
+                    <span class="text-gray-500">// Lặp từ vòng 1 đến vòng 5</span><br>
+                    <input type="text" id="input-0" class="code-input w-16" placeholder="???"> (<span class="text-blue-400">int</span> vong = <span class="text-green-300">1</span>; vong &lt;= <span class="text-green-300">5</span>; vong++) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Dang quet vong "</span> &lt;&lt; vong &lt;&lt; <span class="text-orange-300">"\\n"</span>;<br>
+                    }
+                `,
+                answers: ["for"],
+                successMsg: "Radar đã quét xong! Vòng lặp <b>for</b> cực kỳ tiện lợi với 3 thành phần: Khởi tạo giá trị ban đầu, Điều kiện dừng, và Bước tăng.",
+                consoleOutput: "Dang quet vong 1<br>Dang quet vong 2<br>Dang quet vong 3<br>Dang quet vong 4<br>Dang quet vong 5",
+                emoji: "📡"
+            },
+            {
+                title: "Bài 14: Tên gọi phi hành gia (Kiểu chuỗi)",
+                story: "Khoan đã, tớ quên mất tên cậu rồi! Để lưu trữ tên, ta không dùng kiểu số (int) nữa mà phải dùng kiểu chuỗi (string). Nhập từ khóa nhé!",
+                task: "Điền kiểu dữ liệu 'string' để tạo biến lưu tên.",
+                hint: "Gợi ý: Kiểu dữ liệu chứa văn bản trong C++ là chuỗi string.",
+                codeHTML: `
+                    <span class="text-purple-400">#include</span> <span class="text-green-400">&lt;string&gt;</span><br><br>
+                    <input type="text" id="input-0" class="code-input w-20" placeholder="???"> ten <span class="text-blue-300">=</span> <span class="text-orange-300">"John Doe"</span>;<br><br>
+                    cout &lt;&lt; <span class="text-orange-300">"Xin chao phi hanh gia: "</span> &lt;&lt; ten;
+                `,
+                answers: ["string"],
+                successMsg: "Chào John Doe! Kiểu biến <b>string</b> dùng để lưu các đoạn văn bản. Dữ liệu văn bản sẽ luôn được đặt trong dấu ngoặc kép.",
+                consoleOutput: "Xin chao phi hanh gia: John Doe",
+                emoji: "🧑‍🚀"
+            },
+            {
+                title: "Bài 15: Tăng điểm kinh nghiệm (Toán tử ++)",
+                story: "Mỗi lần hoàn thành nhiệm vụ, điểm của cậu sẽ tăng lên 1. Thay vì viết 'diem = diem + 1', các lập trình viên thường dùng toán tử cộng cộng.",
+                task: "Điền toán tử ++ để tăng biến diem lên 1 đơn vị.",
+                hint: "Gợi ý: Dấu tăng giá trị (increment) là 2 dấu cộng viết liền nhau: ++.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> diem <span class="text-blue-300">=</span> <span class="text-green-300">99</span>;<br><br>
+                    <span class="text-gray-500">// Tăng điểm lên 1</span><br>
+                    diem<input type="text" id="input-0" class="code-input w-12" placeholder="??">;<br><br>
+                    cout &lt;&lt; <span class="text-orange-300">"Diem hien tai: "</span> &lt;&lt; diem;
+                `,
+                answers: ["++"],
+                successMsg: "Lên cấp! Toán tử <b>++</b> giúp tăng giá trị của biến số lên đúng 1 đơn vị một cách ngắn gọn nhất.",
+                consoleOutput: "Diem hien tai: 100",
+                emoji: "💯"
+            },
+
+            // --- 15 BÀI MỚI (BÀI 16 ĐẾN 30) ---
+            {
+                title: "Bài 16: Hàng hóa dư thừa (Phép chia lấy dư)",
+                story: "Có 10 kiện hàng chia đều cho 3 khoang chứa. Hỏi còn dư mấy kiện ở bên ngoài? Hãy dùng toán tử chia lấy dư nhé!",
+                task: "Điền toán tử chia lấy dư (Modulo) để tìm số dư của 10 chia 3.",
+                hint: "Gợi ý: Dấu chia lấy dư trong C++ là dấu phần trăm (%).",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> hangHoa <span class="text-blue-300">=</span> <span class="text-green-300">10</span>;<br>
+                    <span class="text-blue-400">int</span> khoangChua <span class="text-blue-300">=</span> <span class="text-green-300">3</span>;<br><br>
+                    <span class="text-gray-500">// Tính số hàng bị dư ra</span><br>
+                    <span class="text-blue-400">int</span> hangDu <span class="text-blue-300">=</span> hangHoa <input type="text" id="input-0" class="code-input w-12" placeholder="?"> khoangChua;<br><br>
+                    cout &lt;&lt; <span class="text-orange-300">"So kien hang du la: "</span> &lt;&lt; hangDu;
+                `,
+                answers: ["%"],
+                successMsg: "Chính xác! 10 chia 3 được 3, dư 1. Phép <b>%</b> rất hữu ích khi bạn muốn kiểm tra tính chẵn lẻ đó.",
+                consoleOutput: "So kien hang du la: 1 📦",
+                emoji: "📦"
+            },
+            {
+                title: "Bài 17: Giảm nhiệt độ (Toán tử --)",
+                story: "Động cơ đang quá nóng! Cậu cần dùng lệnh giảm đi 1 đơn vị để từ từ hạ nhiệt. Giống như ++, chúng ta có toán tử trừ trừ.",
+                task: "Điền toán tử -- để giảm giá trị biến nhietDo xuống 1.",
+                hint: "Gợi ý: Dấu giảm giá trị (decrement) là 2 dấu trừ liền nhau: --.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> nhietDo <span class="text-blue-300">=</span> <span class="text-green-300">100</span>;<br><br>
+                    <span class="text-gray-500">// Giảm nhiệt độ đi 1</span><br>
+                    nhietDo<input type="text" id="input-0" class="code-input w-12" placeholder="??">;<br><br>
+                    cout &lt;&lt; <span class="text-orange-300">"Nhiet do hien tai: "</span> &lt;&lt; nhietDo;
+                `,
+                answers: ["--"],
+                successMsg: "Đã làm mát thành công! Toán tử <b>--</b> sẽ trừ biến số đi 1 đơn vị cực kỳ nhanh gọn.",
+                consoleOutput: "Nhiet do hien tai: 99 ❄️",
+                emoji: "🌡️"
+            },
+            {
+                title: "Bài 18: Tọa độ chính xác (Kiểu số thực)",
+                story: "Tọa độ trong không gian không phải lúc nào cũng là số nguyên tròn trĩnh. Để lưu một số có dấu thập phân (phẩy), ta dùng kiểu số thực.",
+                task: "Điền kiểu dữ liệu số thực (double) để lưu tọa độ.",
+                hint: "Gợi ý: Kiểu số thực phổ biến nhất trong C++ là double.",
+                codeHTML: `
+                    <span class="text-gray-500">// Khai báo tọa độ X là 12.5</span><br>
+                    <input type="text" id="input-0" class="code-input w-24" placeholder="??????"> toaDoX <span class="text-blue-300">=</span> <span class="text-green-300">12.5</span>;<br><br>
+                    cout &lt;&lt; <span class="text-orange-300">"Toa do X: "</span> &lt;&lt; toaDoX;
+                `,
+                answers: ["double"],
+                successMsg: "Tuyệt vời! Kiểu <b>double</b> (hoặc float) cho phép chúng ta lưu trữ các con số chi tiết và chính xác đến phần thập phân.",
+                consoleOutput: "Toa do X: 12.5 🧭",
+                emoji: "🛰️"
+            },
+            {
+                title: "Bài 19: Quy tắc bất di bất dịch (Hằng số)",
+                story: "Số hiệu của tàu (101) là thứ không bao giờ được phép thay đổi trong suốt hành trình. Hãy khóa biến này lại bằng từ khóa 'hằng số' nhé!",
+                task: "Điền từ khóa const để biến SOHIEU thành hằng số.",
+                hint: "Gợi ý: Từ khóa hằng số viết tắt của chữ 'constant' là: const.",
+                codeHTML: `
+                    <span class="text-gray-500">// Không ai được phép thay đổi số hiệu này</span><br>
+                    <input type="text" id="input-0" class="code-input w-20" placeholder="?????"> <span class="text-blue-400">int</span> SOHIEU <span class="text-blue-300">=</span> <span class="text-green-300">101</span>;<br><br>
+                    cout &lt;&lt; <span class="text-orange-300">"Day la tau vu tru so: "</span> &lt;&lt; SOHIEU;
+                `,
+                answers: ["const"],
+                successMsg: "Đã khóa chặt! Khi đặt <b>const</b> trước một biến, hệ thống sẽ báo lỗi nếu ai đó cố tình gán lại giá trị cho nó.",
+                consoleOutput: "Day la tau vu tru so: 101 🔒",
+                emoji: "🛡️"
+            },
+            {
+                title: "Bài 20: Phân loại hành tinh (Ký tự)",
+                story: "Radar vừa quét thấy một hành tinh. Hành tinh này được xếp loại A. Để lưu trữ CHỈ MỘT ký tự (chữ cái), cậu hãy dùng kiểu ký tự nhé.",
+                task: "Điền kiểu dữ liệu ký tự (char) để lưu biến loaiHanhTinh.",
+                hint: "Gợi ý: Kiểu ký tự viết tắt của 'character' là char.",
+                codeHTML: `
+                    <span class="text-gray-500">// Phân loại: A, B, hoặc C</span><br>
+                    <input type="text" id="input-0" class="code-input w-16" placeholder="????"> loaiHanhTinh <span class="text-blue-300">=</span> <span class="text-yellow-300">'A'</span>;<br><br>
+                    cout &lt;&lt; <span class="text-orange-300">"Phat hien hanh tinh loai: "</span> &lt;&lt; loaiHanhTinh;
+                `,
+                answers: ["char"],
+                successMsg: "Hoàn hảo! Lưu ý kiểu <b>char</b> chỉ lưu 1 ký tự và ký tự đó phải nằm trong dấu nháy đơn ' ' nhé.",
+                consoleOutput: "Phat hien hanh tinh loai: A 🪐",
+                emoji: "🌍"
+            },
+            {
+                title: "Bài 21: Bảng điều khiển trung tâm (Lệnh switch)",
+                story: "Tàu có 3 chế độ: 1-Bay, 2-Phòng thủ, 3-Ngủ đông. Thay vì viết nhiều if-else, người ta thường dùng một 'công tắc' để chuyển đổi các chế độ.",
+                task: "Điền từ khóa switch để tạo khối rẽ nhánh nhiều lựa chọn.",
+                hint: "Gợi ý: 'Công tắc' trong tiếng Anh là switch.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> cheDo <span class="text-blue-300">=</span> <span class="text-green-300">2</span>;<br><br>
+                    <span class="text-gray-500">// Tạo khối chuyển đổi dựa vào biến cheDo</span><br>
+                    <input type="text" id="input-0" class="code-input w-20" placeholder="??????"> (cheDo) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">case</span> <span class="text-green-300">1</span>: cout &lt;&lt; <span class="text-orange-300">"Bay!"</span>; <span class="text-purple-400">break</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">case</span> <span class="text-green-300">2</span>: cout &lt;&lt; <span class="text-orange-300">"Phong thu!"</span>; <span class="text-purple-400">break</span>;<br>
+                    }
+                `,
+                answers: ["switch"],
+                successMsg: "Bật công tắc thành công! Cấu trúc <b>switch</b> giúp code gọn gàng hơn khi cần kiểm tra nhiều giá trị của cùng một biến.",
+                consoleOutput: "Phong thu! 🛡️",
+                emoji: "🕹️"
+            },
+            {
+                title: "Bài 22: Trường hợp cụ thể (Lệnh case)",
+                story: "Tiếp tục với bảng điều khiển lúc nãy. Để chỉ định một trường hợp cụ thể xảy ra trong khối switch, ta dùng từ khóa Trường Hợp.",
+                task: "Điền từ khóa case để kiểm tra trường hợp cheDo bằng 3.",
+                hint: "Gợi ý: 'Trường hợp' trong tiếng Anh là case.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> cheDo <span class="text-blue-300">=</span> <span class="text-green-300">3</span>;<br><br>
+                    <span class="text-purple-400">switch</span> (cheDo) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">case</span> <span class="text-green-300">1</span>: cout &lt;&lt; <span class="text-orange-300">"Bay!"</span>; <span class="text-purple-400">break</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">// Điền trường hợp 3:</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="input-0" class="code-input w-16" placeholder="????"> <span class="text-green-300">3</span>: cout &lt;&lt; <span class="text-orange-300">"Ngu dong!"</span>; <span class="text-purple-400">break</span>;<br>
+                    }
+                `,
+                answers: ["case"],
+                successMsg: "Hệ thống đi vào giấc ngủ! Từ khóa <b>case</b> luôn đi kèm với giá trị cần kiểm tra và dấu hai chấm (:) ở cuối.",
+                consoleOutput: "Ngu dong! 💤",
+                emoji: "🔌"
+            },
+            {
+                title: "Bài 23: Thoát hiểm khẩn cấp (Lệnh break)",
+                story: "Radar đang quét vòng lặp 10 lần, nhưng ở vòng thứ 3 thì phát hiện hố đen! Cậu cần ra lệnh 'phá vỡ' vòng lặp ngay lập tức để trốn thoát.",
+                task: "Điền lệnh break để thoát khỏi vòng lặp sớm.",
+                hint: "Gợi ý: Từ khóa để phá vỡ, thoát ra là break.",
+                codeHTML: `
+                    <span class="text-purple-400">for</span> (<span class="text-blue-400">int</span> i = <span class="text-green-300">1</span>; i &lt;= <span class="text-green-300">10</span>; i++) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Quet "</span> &lt;&lt; i &lt;&lt; <span class="text-orange-300">"..."</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">if</span> (i == <span class="text-green-300">3</span>) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Ho den! Ngung ngay!"</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="input-0" class="code-input w-20" placeholder="?????">;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    }
+                `,
+                answers: ["break"],
+                successMsg: "Thoát hiểm an toàn! Lệnh <b>break</b> giúp hủy bỏ hoàn toàn vòng lặp (for, while) ngay tại thời điểm gọi nó.",
+                consoleOutput: "Quet 1...Quet 2...Quet 3...Ho den! Ngung ngay! 🕳️",
+                emoji: "🏃"
+            },
+            {
+                title: "Bài 24: Bỏ qua lỗi nhỏ (Lệnh continue)",
+                story: "Lần này radar quét 5 vòng. Ở vòng 2 bị nhiễu sóng nhẹ. Ta không muốn hủy toàn bộ quét, chỉ muốn 'bỏ qua' vòng 2 và 'tiếp tục' vòng 3.",
+                task: "Điền lệnh continue để bỏ qua lượt hiện tại và sang lượt tiếp theo.",
+                hint: "Gợi ý: 'Tiếp tục' trong tiếng Anh là continue.",
+                codeHTML: `
+                    <span class="text-purple-400">for</span> (<span class="text-blue-400">int</span> i = <span class="text-green-300">1</span>; i &lt;= <span class="text-green-300">3</span>; i++) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">if</span> (i == <span class="text-green-300">2</span>) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" id="input-0" class="code-input w-24" placeholder="????????">; <span class="text-gray-500">// Bỏ qua lượt quét 2</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Hoan thanh "</span> &lt;&lt; i &lt;&lt; <span class="text-orange-300">"\\n"</span>;<br>
+                    }
+                `,
+                answers: ["continue"],
+                successMsg: "Hoạt động hoàn hảo! Khác với break, <b>continue</b> không phá hủy vòng lặp mà chỉ ép vòng lặp chuyển ngay sang lượt kế tiếp.",
+                consoleOutput: "Hoan thanh 1<br>Hoan thanh 3",
+                emoji: "⏭️"
+            },
+            {
+                title: "Bài 25: Tủ khóa đồ (Mảng 1 chiều)",
+                story: "Tớ có 3 bộ áo giáp cần cất vào tủ. Thay vì khai báo 3 biến (giap1, giap2, giap3), tớ có thể dùng Mảng (Array) để gom chung. Hãy đóng mở ngoặc vuông nhé!",
+                task: "Khai báo mảng chứa 3 phần tử bằng cặp ngoặc vuông [].",
+                hint: "Gợi ý: Cặp ngoặc dùng cho mảng là ngoặc vuông [] (mở trước đóng sau, không có khoảng trắng).",
+                codeHTML: `
+                    <span class="text-gray-500">// Khai báo mảng tên tuDo có sức chứa 3 phần tử</span><br>
+                    <span class="text-blue-400">int</span> tuDo<input type="text" id="input-0" class="code-input w-12" placeholder="??"><span class="text-green-300">3</span><input type="text" id="input-1" class="code-input w-12" placeholder="??">;<br><br>
+                    cout &lt;&lt; <span class="text-orange-300">"Da tao tu do 3 ngan!"</span>;
+                `,
+                answers: ["[", "]"],
+                successMsg: "Tạo mảng thành công! Mảng (Array) giúp lưu trữ một chuỗi các giá trị có cùng kiểu dữ liệu. Sức chứa luôn nằm trong <b>[ ]</b>.",
+                consoleOutput: "Da tao tu do 3 ngan! 🗄️",
+                emoji: "🎒"
+            },
+            {
+                title: "Bài 26: Lấy đồ từ tủ (Chỉ số Mảng)",
+                story: "Để lấy bộ áo giáp ở ngăn đầu tiên của tủ đồ, cậu cần nhớ một quy tắc kỳ lạ của dân lập trình: Chúng ta luôn bắt đầu đếm từ số 0, không phải số 1!",
+                task: "Điền chỉ số 0 để truy xuất phần tử đầu tiên của mảng.",
+                hint: "Gợi ý: Chỉ số phần tử đầu tiên của mọi mảng là 0.",
+                codeHTML: `
+                    <span class="text-gray-500">// Tạo tủ có 3 ngăn chứa điểm sức mạnh giáp</span><br>
+                    <span class="text-blue-400">int</span> tuDo[<span class="text-green-300">3</span>] = {<span class="text-green-300">100</span>, <span class="text-green-300">150</span>, <span class="text-green-300">200</span>};<br><br>
+                    <span class="text-gray-500">// Lấy giáp ở ngăn ĐẦU TIÊN (sức mạnh 100)</span><br>
+                    cout &lt;&lt; <span class="text-orange-300">"Lay giap suc manh: "</span> &lt;&lt; tuDo[<input type="text" id="input-0" class="code-input w-12" placeholder="?">];
+                `,
+                answers: ["0"],
+                successMsg: "Mặc áo giáp thành công! Nhớ kỹ nhé: Trong C++, chỉ số của mảng (Index) bắt đầu từ <b>0</b>. Nên mảng có 3 phần tử sẽ là ngăn 0, ngăn 1 và ngăn 2.",
+                consoleOutput: "Lay giap suc manh: 100 🛡️",
+                emoji: "🧮"
+            },
+            {
+                title: "Bài 27: Xác thực khuôn mặt (Toán tử So sánh bằng)",
+                story: "Lệnh gán là 1 dấu '='. Nhưng để KIỂM TRA SO SÁNH xem khuôn mặt nhập vào có BẰNG với dữ liệu gốc không, ta phải dùng 2 dấu '=' liền nhau.",
+                task: "Điền toán tử so sánh bằng (==) để kiểm tra điều kiện.",
+                hint: "Gợi ý: Toán tử so sánh bằng là hai dấu bằng viết liền: ==.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> idGoc <span class="text-blue-300">=</span> <span class="text-green-300">999</span>;<br>
+                    <span class="text-blue-400">int</span> idQuetDuoc <span class="text-blue-300">=</span> <span class="text-green-300">999</span>;<br><br>
+                    <span class="text-purple-400">if</span> (idQuetDuoc <input type="text" id="input-0" class="code-input w-12" placeholder="??"> idGoc) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Xac thuc thanh cong!"</span>;<br>
+                    }
+                `,
+                answers: ["=="],
+                successMsg: "Khớp khuôn mặt! Rất nhiều người mới học lập trình hay nhầm lẫn giữa Gán (=) và So sánh (==). Cậu phải cẩn thận nhé!",
+                consoleOutput: "Xac thuc thanh cong! 👤",
+                emoji: "😎"
+            },
+            {
+                title: "Bài 28: Kẻ gian đột nhập (Toán tử Khác)",
+                story: "Nếu id quét được KHÁC với id gốc, hệ thống phải rung chuông báo động ngay! Ký hiệu để chỉ 'khác' trong C++ là chấm than đi kèm dấu bằng.",
+                task: "Điền toán tử khác (!=) để kiểm tra sự sai lệch.",
+                hint: "Gợi ý: Dấu khác là kết hợp của dấu chấm than và dấu bằng: !=.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> idGoc <span class="text-blue-300">=</span> <span class="text-green-300">999</span>;<br>
+                    <span class="text-blue-400">int</span> idQuetDuoc <span class="text-blue-300">=</span> <span class="text-green-300">111</span>;<br><br>
+                    <span class="text-purple-400">if</span> (idQuetDuoc <input type="text" id="input-0" class="code-input w-12" placeholder="??"> idGoc) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Bao dong! Co ke gian!"</span>;<br>
+                    }
+                `,
+                answers: ["!="],
+                successMsg: "Đã bắt được kẻ gian! Toán tử <b>!=</b> dùng để kiểm tra xem hai giá trị có khác nhau hay không.",
+                consoleOutput: "Bao dong! Co ke gian! 🚨",
+                emoji: "👿"
+            },
+            {
+                title: "Bài 29: Đủ tuổi lái tàu (Lớn hơn hoặc bằng)",
+                story: "Để được tự tay cầm lái, điểm kinh nghiệm của cậu phải TỪ 10 TRỞ LÊN. Nghĩa là lớn hơn HOẶC bằng 10. Điền ký hiệu tương ứng nhé!",
+                task: "Điền toán tử lớn hơn hoặc bằng (>=).",
+                hint: "Gợi ý: Dấu lớn hơn viết trước, dấu bằng viết sau: >=.",
+                codeHTML: `
+                    <span class="text-blue-400">int</span> kinhNghiem <span class="text-blue-300">=</span> <span class="text-green-300">10</span>;<br><br>
+                    <span class="text-purple-400">if</span> (kinhNghiem <input type="text" id="input-0" class="code-input w-12" placeholder="??"> <span class="text-green-300">10</span>) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Cho phep lai tau!"</span>;<br>
+                    }
+                `,
+                answers: [">="],
+                successMsg: "Bắt đầu lái thôi! Tương tự, ta cũng có dấu nhỏ hơn hoặc bằng (<=) để xử lý các bài toán giới hạn.",
+                consoleOutput: "Cho phep lai tau! 🕹️",
+                emoji: "👨‍✈️"
+            },
+            {
+                title: "Bài 30: Đóng gói mã lệnh (Viết Hàm)",
+                story: "Cậu phải sửa lỗi máy móc rất nhiều lần. Thay vì gõ lại code, ta có thể gói code đó vào một HÀM (Function) để tái sử dụng. Hàm không trả về giá trị gọi là hàm 'rỗng' (void).",
+                task: "Điền từ khóa void để tạo hàm SuaChua không trả về kết quả.",
+                hint: "Gợi ý: Từ khóa để khai báo hàm không trả về dữ liệu là void.",
+                codeHTML: `
+                    <span class="text-gray-500">// Tạo một hàm riêng biệt</span><br>
+                    <input type="text" id="input-0" class="code-input w-20" placeholder="????"> <span class="text-yellow-200">SuaChua</span>() {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; <span class="text-orange-300">"Dang bat vit... Xong!"</span>;<br>
+                    }<br><br>
+                    <span class="text-blue-400">int</span> <span class="text-yellow-200">main</span>() {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-yellow-200">SuaChua</span>(); <span class="text-gray-500">// Gọi hàm ra dùng</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">return</span> <span class="text-green-300">0</span>;<br>
+                    }
+                `,
+                answers: ["void"],
+                successMsg: "Khởi tạo Hàm thành công! Việc chia nhỏ các đoạn code vào các Hàm (Function) sẽ giúp cậu viết ra các hệ thống lớn mạnh mẽ và chuyên nghiệp!",
+                consoleOutput: "Dang bat vit... Xong! 🔧",
+                emoji: "🛠️"
+            }
+        ];
+
+        // --- GAME LOGIC ---
+        let currentLevel = 0;
+        let score = 0;
+
+        // Elements
+        const uiLevel = document.getElementById("ui-level");
+        const uiScore = document.getElementById("ui-score");
+        const storyText = document.getElementById("story-text");
+        const taskDesc = document.getElementById("task-desc");
+        const hintText = document.getElementById("hint-text");
+        const codeEditor = document.getElementById("code-editor");
+        const consoleOutput = document.getElementById("console-output");
+        const robotEmoji = document.getElementById("robot-emoji");
+        
+        // Modals
+        const successModal = document.getElementById("success-modal");
+        const modalContent = document.getElementById("modal-content");
+        const successMessage = document.getElementById("success-message");
+        const successConsole = document.getElementById("success-console");
+        const endModal = document.getElementById("end-modal");
+        const finalScore = document.getElementById("final-score");
+
+        function initGame() {
+            currentLevel = 0;
+            score = 0;
+            loadLevel(currentLevel);
+        }
+
+        function loadLevel(index) {
+            const data = levelData[index];
+            
+            // Update UI
+            uiLevel.innerText = `${index + 1}/${levelData.length}`;
+            uiScore.innerText = score;
+            
+            storyText.innerHTML = data.story;
+            taskDesc.innerHTML = data.task;
+            hintText.innerHTML = data.hint;
+            codeEditor.innerHTML = data.codeHTML;
+            consoleOutput.innerHTML = `<span class="text-blue-400">>_</span> Sẵn sàng chạy mã...`;
+            robotEmoji.innerText = data.emoji;
+
+            // Focus on first input
+            setTimeout(() => {
+                const firstInput = document.getElementById('input-0');
+                if(firstInput) firstInput.focus();
+            }, 100);
+            
+            // Allow enter key to submit
+            const inputs = document.querySelectorAll('.code-input');
+            inputs.forEach(input => {
+                input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        checkAnswer();
+                    }
+                });
+            });
+        }
+
+        function checkAnswer() {
+            const data = levelData[currentLevel];
+            let allCorrect = true;
+
+            for (let i = 0; i < data.answers.length; i++) {
+                const inputEl = document.getElementById(`input-${i}`);
+                if (!inputEl) continue;
+
+                const userVal = inputEl.value.trim().toLowerCase();
+                const correctVal = data.answers[i].toLowerCase();
+
+                if (userVal === correctVal) {
+                    inputEl.classList.remove('shake');
+                    inputEl.classList.add('success-glow', 'bg-emerald-900', 'text-white');
+                    inputEl.disabled = true;
+                } else {
+                    allCorrect = false;
+                    inputEl.classList.remove('shake');
+                    // Trigger reflow to restart animation
+                    void inputEl.offsetWidth; 
+                    inputEl.classList.add('shake');
+                    inputEl.value = ''; // clear wrong answer
+                    inputEl.focus();
+                    
+                    consoleOutput.innerHTML = `<span class="text-red-400">>_ Lỗi biên dịch:</span> Sai cú pháp ở dòng chứa ô trống thứ ${i+1}. Đọc lại gợi ý nhé!`;
+                    robotEmoji.innerText = "😵‍💫";
+                    setTimeout(() => { if(!allCorrect) robotEmoji.innerText = "🤔"; }, 1500);
+                    break; // Stop at first wrong answer
+                }
+            }
+
+            if (allCorrect) {
+                // Success!
+                score += 100;
+                uiScore.innerText = score;
+                consoleOutput.innerHTML = `<span class="text-green-400">>_ Biên dịch thành công!</span><br/>>_ Output:<br/>${data.consoleOutput}`;
+                robotEmoji.innerText = "🤩";
+                
+                // Show modal after a tiny delay for effect
+                setTimeout(() => {
+                    showSuccessModal(data);
+                }, 600);
+            }
+        }
+
+        function showSuccessModal(data) {
+            successMessage.innerHTML = data.successMsg;
+            successConsole.innerHTML = `> ${data.consoleOutput}`;
+            successModal.classList.remove("hidden");
+            // small pop animation
+            modalContent.classList.remove("scale-95");
+            modalContent.classList.add("scale-100");
+        }
+
+        function nextLevel() {
+            // Hide modal
+            successModal.classList.add("hidden");
+            modalContent.classList.remove("scale-100");
+            modalContent.classList.add("scale-95");
+
+            currentLevel++;
+            if (currentLevel < levelData.length) {
+                loadLevel(currentLevel);
+            } else {
+                showEndGame();
+            }
+        }
+
+        function showEndGame() {
+            finalScore.innerText = score;
+            endModal.classList.remove("hidden");
+        }
+
+        // Bắt đầu game khi tải xong
+        window.onload = initGame;
+    </script>
+</body>
+</html>
